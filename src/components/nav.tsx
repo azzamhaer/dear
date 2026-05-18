@@ -6,13 +6,14 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface NavProps {
-  user: { displayName: string };
+  user: { displayName: string; avatarUrl: string | null };
 }
 
 const links = [
   { href: "/", label: "Home" },
   { href: "/albums", label: "Albums" },
   { href: "/calendar", label: "Calendar" },
+  { href: "/notes", label: "Notes" },
   { href: "/on-this-day", label: "Today" },
 ];
 
@@ -72,7 +73,10 @@ export function Nav({ user }: NavProps) {
             className="rounded-full p-1.5 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
             aria-label="Menu"
           >
-            <UserChipIcon initial={user.displayName.charAt(0).toUpperCase()} />
+            <Avatar
+              src={user.avatarUrl}
+              initial={user.displayName.charAt(0).toUpperCase()}
+            />
           </button>
         </div>
       </div>
@@ -85,7 +89,7 @@ export function Nav({ user }: NavProps) {
               key={l.href}
               href={l.href}
               className={cn(
-                "rounded-full px-3 py-1.5 text-xs transition",
+                "rounded-full px-2.5 py-1.5 text-[11px] transition",
                 isActive(l.href)
                   ? "bg-ink-900 text-cream-50"
                   : "text-ink-500 hover:text-ink-900",
@@ -112,9 +116,16 @@ export function Nav({ user }: NavProps) {
               </div>
               <div className="font-medium">{user.displayName}</div>
             </div>
+            <Link
+              href="/settings"
+              onClick={() => setMenuOpen(false)}
+              className="mt-1 block w-full rounded-xl px-3 py-2 text-left text-sm text-ink-700 hover:bg-ink-900/5"
+            >
+              Settings
+            </Link>
             <button
               onClick={logout}
-              className="mt-1 block w-full rounded-xl px-3 py-2 text-left text-sm text-ink-700 hover:bg-ink-900/5"
+              className="block w-full rounded-xl px-3 py-2 text-left text-sm text-ink-700 hover:bg-ink-900/5"
             >
               Sign out
             </button>
@@ -133,7 +144,21 @@ function PlusIcon({ className }: { className?: string }) {
   );
 }
 
-function UserChipIcon({ initial }: { initial: string }) {
+function Avatar({
+  src,
+  initial,
+}: {
+  src: string | null;
+  initial: string;
+}) {
+  if (src) {
+    return (
+      <span className="block h-7 w-7 overflow-hidden rounded-full">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt="" className="h-full w-full object-cover" />
+      </span>
+    );
+  }
   return (
     <div className="grid h-7 w-7 place-items-center rounded-full bg-gradient-to-br from-rose-blush to-rose-dusty text-[11px] font-semibold text-cream-50">
       {initial}

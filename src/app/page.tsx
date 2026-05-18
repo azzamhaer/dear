@@ -37,7 +37,8 @@ export default async function HomePage() {
 }
 
 function pickGreeting(): string {
-  const h = new Date().getUTCHours();
+  // WIB hour-of-day
+  const h = new Date(Date.now() + 7 * 3600 * 1000).getUTCHours();
   if (h < 5) return "still up";
   if (h < 11) return "good morning";
   if (h < 17) return "good afternoon";

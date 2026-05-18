@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { getMemory } from "@/lib/queries";
 import { getCurrentUser } from "@/lib/session";
 import { mediaUrl } from "@/lib/r2";
-import { formatLongDate, moodEmoji, moodLabel } from "@/lib/utils";
+import { moodEmoji, moodLabel } from "@/lib/utils";
+import { formatWibDisplay } from "@/lib/wib";
 import { Reactions } from "@/components/reactions";
+import { Comments } from "@/components/comments";
 import { MemoryActions } from "./actions";
 
 export const runtime = "edge";
@@ -44,7 +46,7 @@ export default async function MemoryPage({
 
       <div className="text-center">
         <div className="text-xs uppercase tracking-[0.2em] text-ink-400">
-          {formatLongDate(date)}
+          {formatWibDisplay(date)}
         </div>
         <h1 className="mt-2 font-display text-3xl italic leading-tight sm:text-4xl">
           {item.memory.caption || "untitled moment"}
@@ -104,6 +106,8 @@ export default async function MemoryPage({
           </div>
         ) : null}
       </div>
+
+      <Comments memoryId={item.memory.id} currentUserId={user?.id} />
     </article>
   );
 }

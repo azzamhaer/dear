@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { Reactions } from "./reactions";
 import type { MemoryWithRelations } from "@/lib/queries";
-import { formatLongDate, moodEmoji, moodLabel } from "@/lib/utils";
+import { moodEmoji, moodLabel } from "@/lib/utils";
+import { formatWibDisplay } from "@/lib/wib";
 import { mediaUrl } from "@/lib/media-url";
 
 interface Props {
@@ -43,7 +44,7 @@ export function MemoryCard({ item, index = 0, currentUserId }: Props) {
               {author.displayName}
             </div>
             <div className="text-xs text-ink-400">
-              {formatLongDate(date)}
+              {formatWibDisplay(date)}
               {memory.location ? (
                 <>
                   <span className="mx-1.5">·</span>

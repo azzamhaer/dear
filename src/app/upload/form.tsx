@@ -4,23 +4,18 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { UploadZone, type UploadedItem } from "@/components/upload-zone";
 import { MoodPicker } from "@/components/mood-picker";
+import { nowWibLocal, wibLocalToIso } from "@/lib/wib";
 
 interface Props {
   albums: Array<{ id: string; name: string }>;
-}
-
-function todayLocalISO(): string {
-  const d = new Date();
-  const off = d.getTimezoneOffset();
-  const local = new Date(d.getTime() - off * 60000);
-  return local.toISOString().slice(0, 10);
 }
 
 export function UploadForm({ albums }: Props) {
   const router = useRouter();
   const [media, setMedia] = useState<UploadedItem[]>([]);
   const [caption, setCaption] = useState("");
-  const [date, setDate] = useState(todayLocalISO());
+  const [useNow, setUseNow] = useState(true);
+  const [customDt, setCustomDt] = useState(nowWibLocal());
   const [location, setLocation] = useState("");
   const [mood, setMood] = useState<string | null>(null);
   const [albumId, setAlbumId] = useState<string>("");
@@ -35,12 +30,16 @@ export function UploadForm({ albums }: Props) {
     setSaving(true);
     setError(null);
     try {
+      const memoryDate = useNow
+        ? new Date().toISOString()
+        : wibLocalToIso(customDt);
+
       const res = await fetch("/api/memories", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           caption,
-          memoryDate: new Date(date).toISOString(),
+          memoryDate,
           location: location || undefined,
           mood: mood || undefined,
           albumId: albumId || null,
@@ -83,25 +82,43 @@ export function UploadForm({ albums }: Props) {
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Date">
+        <div>
+          <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
+            When
+          </label>
+          <label className="mb-2 flex cursor-pointer select-none items-center gap-2.5 rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3">
             <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              type="checkbox"
+              checked={useNow}
+              onChange={(e) => setUseNow(e.target.checked)}
+              className="h-4 w-4 accent-rose-dusty"
+            />
+            <span className="text-sm">
+              Use current time (WIB){" "}
+              {useNow ? (
+                <span className="text-ink-400">— right now</span>
+              ) : null}
+            </span>
+          </label>
+          {!useNow ? (
+            <input
+              type="datetime-local"
+              value={customDt}
+              onChange={(e) => setCustomDt(e.target.value)}
               className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
             />
-          </Field>
-          <Field label="Place (optional)">
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="The kitchen, Kyoto, the long drive…"
-              className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
-            />
-          </Field>
+          ) : null}
         </div>
+
+        <Field label="Place (optional)">
+          <input
+            type="text"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="The kitchen, Kyoto, the long drive…"
+            className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
+          />
+        </Field>
 
         <Field label="Mood (optional)">
           <MoodPicker value={mood} onChange={setMood} />

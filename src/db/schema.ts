@@ -107,6 +107,50 @@ export const reactions = sqliteTable("reactions", {
   memoryIdx: index("reactions_memory_idx").on(t.memoryId),
 }));
 
+/** Conversations under a memory. */
+export const comments = sqliteTable("comments", {
+  id: text("id").primaryKey(),
+  memoryId: text("memory_id")
+    .notNull()
+    .references(() => memories.id, { onDelete: "cascade" }),
+  authorId: text("author_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  body: text("body").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+}, (t) => ({
+  memoryIdx: index("comments_memory_idx").on(t.memoryId),
+}));
+
+/** Shared notepad — letters, plans, lists. */
+export const notes = sqliteTable("notes", {
+  id: text("id").primaryKey(),
+  authorId: text("author_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull().default(""),
+  body: text("body").notNull().default(""),
+  pinned: integer("pinned", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+}, (t) => ({
+  updatedIdx: index("notes_updated_idx").on(t.updatedAt),
+}));
+
+export type Comment = typeof comments.$inferSelect;
+export type NewComment = typeof comments.$inferInsert;
+export type Note = typeof notes.$inferSelect;
+export type NewNote = typeof notes.$inferInsert;
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Album = typeof albums.$inferSelect;

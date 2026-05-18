@@ -53,7 +53,14 @@ export default async function RootLayout({
       className={`${sans.variable} ${serif.variable} ${display.variable}`}
     >
       <body className="font-sans text-ink-900 antialiased">
-        {user ? <Nav user={{ displayName: user.displayName }} /> : null}
+        {user ? (
+          <Nav
+            user={{
+              displayName: user.displayName,
+              avatarUrl: user.avatarUrl ?? null,
+            }}
+          />
+        ) : null}
         <main
           className={
             user

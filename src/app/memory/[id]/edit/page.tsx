@@ -6,6 +6,7 @@ import { getMemory } from "@/lib/queries";
 import { getCurrentUser } from "@/lib/session";
 import { EditForm } from "./form";
 import { PageHeader } from "@/components/page-header";
+import { dateToWibLocal } from "@/lib/wib";
 
 export const runtime = "edge";
 
@@ -39,7 +40,7 @@ export default async function EditPage({
         memoryId={item.memory.id}
         initial={{
           caption: item.memory.caption,
-          memoryDate: date.toISOString().slice(0, 10),
+          memoryDateLocal: dateToWibLocal(date),
           location: item.memory.location ?? "",
           mood: item.memory.mood ?? null,
           albumId: item.memory.albumId ?? "",

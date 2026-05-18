@@ -3,10 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MoodPicker } from "@/components/mood-picker";
+import { wibLocalToIso } from "@/lib/wib";
 
 interface Initial {
   caption: string;
-  memoryDate: string;
+  memoryDateLocal: string; // already formatted as WIB datetime-local
   location: string;
   mood: string | null;
   albumId: string;
@@ -35,7 +36,7 @@ export function EditForm({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           caption: v.caption,
-          memoryDate: new Date(v.memoryDate).toISOString(),
+          memoryDate: wibLocalToIso(v.memoryDateLocal),
           location: v.location || null,
           mood: v.mood || null,
           albumId: v.albumId || null,
@@ -66,24 +67,23 @@ export function EditForm({
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Date">
-            <input
-              type="date"
-              value={v.memoryDate}
-              onChange={(e) => setV({ ...v, memoryDate: e.target.value })}
-              className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
-            />
-          </Field>
-          <Field label="Place">
-            <input
-              type="text"
-              value={v.location}
-              onChange={(e) => setV({ ...v, location: e.target.value })}
-              className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
-            />
-          </Field>
-        </div>
+        <Field label="When (WIB)">
+          <input
+            type="datetime-local"
+            value={v.memoryDateLocal}
+            onChange={(e) => setV({ ...v, memoryDateLocal: e.target.value })}
+            className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
+          />
+        </Field>
+
+        <Field label="Place">
+          <input
+            type="text"
+            value={v.location}
+            onChange={(e) => setV({ ...v, location: e.target.value })}
+            className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
+          />
+        </Field>
 
         <Field label="Mood">
           <MoodPicker value={v.mood} onChange={(mood) => setV({ ...v, mood })} />

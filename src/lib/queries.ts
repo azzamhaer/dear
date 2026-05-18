@@ -149,23 +149,25 @@ async function hydrateMemories(
   }));
 }
 
-/** Used by calendar view: count memories per day in a month. */
+/** Used by calendar view: count memories per day (WIB) in a month (WIB). */
 export async function memoriesCountByDay(
   year: number,
   month: number, // 1-12
 ): Promise<Record<string, number>> {
-  const start = Date.UTC(year, month - 1, 1) / 1000;
-  const end = Date.UTC(year, month, 0, 23, 59, 59) / 1000;
+  // Month boundaries in WIB, converted to UTC for the SQL range.
+  const wibStart = Date.UTC(year, month - 1, 1, 0, 0, 0) - 7 * 3600 * 1000;
+  const wibEnd =
+    Date.UTC(year, month, 0, 23, 59, 59) - 7 * 3600 * 1000;
   const rows = await db()
     .select({
-      day: sql<string>`strftime('%Y-%m-%d', ${memories.memoryDate}, 'unixepoch')`,
+      day: sql<string>`strftime('%Y-%m-%d', ${memories.memoryDate}, 'unixepoch', '+7 hours')`,
       count: sql<number>`count(*)`,
     })
     .from(memories)
     .where(
       and(
-        gte(memories.memoryDate, new Date(start * 1000)),
-        lte(memories.memoryDate, new Date(end * 1000)),
+        gte(memories.memoryDate, new Date(wibStart)),
+        lte(memories.memoryDate, new Date(wibEnd)),
       ),
     )
     .groupBy(sql`day`);

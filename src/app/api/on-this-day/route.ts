@@ -14,17 +14,18 @@ export async function GET() {
     return r as Response;
   }
 
-  const now = new Date();
-  const month = now.getUTCMonth() + 1;
-  const day = now.getUTCDate();
+  // "Today" in WIB
+  const wibNow = new Date(Date.now() + 7 * 3600 * 1000);
+  const month = wibNow.getUTCMonth() + 1;
+  const day = wibNow.getUTCDate();
 
-  // Find memories from any year that match today's month/day.
+  // Find memories from any year that match today's WIB month/day.
   const rows = await db()
     .select()
     .from(memories)
     .where(
-      sql`cast(strftime('%m', ${memories.memoryDate}, 'unixepoch') as integer) = ${month}
-       AND cast(strftime('%d', ${memories.memoryDate}, 'unixepoch') as integer) = ${day}`,
+      sql`cast(strftime('%m', ${memories.memoryDate}, 'unixepoch', '+7 hours') as integer) = ${month}
+       AND cast(strftime('%d', ${memories.memoryDate}, 'unixepoch', '+7 hours') as integer) = ${day}`,
     )
     .orderBy(sql`${memories.memoryDate} desc`);
 

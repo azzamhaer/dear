@@ -22,8 +22,11 @@ export default async function CalendarDayPage({
   const year = Number(ys);
   const month = Number(ms);
   const day = Number(ds);
-  const start = Math.floor(Date.UTC(year, month - 1, day, 0, 0, 0) / 1000);
-  const end = Math.floor(Date.UTC(year, month - 1, day, 23, 59, 59) / 1000);
+  // Date is WIB; convert to UTC range for the query.
+  const start = Math.floor(
+    (Date.UTC(year, month - 1, day, 0, 0, 0) - 7 * 3600 * 1000) / 1000,
+  );
+  const end = start + 24 * 3600 - 1;
 
   const [user, items] = await Promise.all([
     getCurrentUser(),
