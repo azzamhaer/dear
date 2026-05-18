@@ -12,12 +12,28 @@ function bytesToHex(buf: ArrayBuffer | Uint8Array): string {
   return out;
 }
 
+/**
+ * Build a Uint8Array backed by a concrete ArrayBuffer so it satisfies
+ * Web Crypto's BufferSource type under strict TS (TS 5.7+ distinguishes
+ * Uint8Array<ArrayBuffer> from Uint8Array<ArrayBufferLike>).
+ */
 function hexToBytes(hex: string): Uint8Array {
-  const out = new Uint8Array(hex.length / 2);
+  const buf = new ArrayBuffer(hex.length / 2);
+  const out = new Uint8Array(buf);
   for (let i = 0; i < out.length; i++) {
     out[i] = parseInt(hex.substr(i * 2, 2), 16);
   }
   return out;
+}
+
+/** Encode UTF-8 into a Uint8Array<ArrayBuffer> (BufferSource-safe). */
+function utf8(s: string): Uint8Array {
+  const bytes = textEncoder.encode(s);
+  // Copy into a fresh ArrayBuffer-backed view to satisfy strict typings.
+  const buf = new ArrayBuffer(bytes.byteLength);
+  const view = new Uint8Array(buf);
+  view.set(bytes);
+  return view;
 }
 
 /** Random hex string of N bytes. */
@@ -40,7 +56,7 @@ export async function hashPassword(
 ): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
-    textEncoder.encode(password),
+    utf8(password),
     "PBKDF2",
     false,
     ["deriveBits"],
@@ -72,16 +88,12 @@ export function constantTimeEqual(a: string, b: string): boolean {
 export async function hmac(data: string, secret: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
-    textEncoder.encode(secret),
+    utf8(secret),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],
   );
-  const sig = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    textEncoder.encode(data),
-  );
+  const sig = await crypto.subtle.sign("HMAC", key, utf8(data));
   return bytesToHex(sig);
 }
 
