@@ -21,7 +21,6 @@ const display = Fraunces({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-display",
-  weight: ["400", "500", "600"],
   style: ["italic", "normal"],
   axes: ["opsz"],
 });
