@@ -41,7 +41,7 @@ export function UploadZone({ value, onChange }: Props) {
         for (const f of arr) form.append("files", f);
         const res = await fetch("/api/upload", { method: "POST", body: form });
         if (!res.ok) {
-          const j = await res.json().catch(() => ({}));
+          const j = (await res.json().catch(() => ({}))) as { error?: string };
           throw new Error(j.error ?? `Upload failed (${res.status})`);
         }
         const j = (await res.json()) as {

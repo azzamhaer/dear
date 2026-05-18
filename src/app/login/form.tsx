@@ -22,7 +22,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         body: JSON.stringify({ username, password }),
       });
       if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(
           j.error === "invalid_credentials"
             ? "That doesn't match what we have."

@@ -25,7 +25,7 @@ export function CalendarView({
   useEffect(() => {
     setLoading(true);
     fetch(`/api/calendar?year=${year}&month=${month}`)
-      .then((r) => r.json())
+      .then((r) => r.json() as Promise<{ counts: Record<string, number> }>)
       .then((j) => setCounts(j.counts ?? {}))
       .finally(() => setLoading(false));
   }, [year, month]);

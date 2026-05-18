@@ -12,7 +12,10 @@ export function OnThisDayStrip() {
 
   useEffect(() => {
     fetch("/api/on-this-day")
-      .then((r) => r.json())
+      .then(
+        (r) =>
+          r.json() as Promise<{ items: MemoryWithRelations[] }>,
+      )
       .then((j) => setItems(j.items ?? []))
       .finally(() => setLoaded(true));
   }, []);
