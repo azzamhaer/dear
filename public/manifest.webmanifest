@@ -1,0 +1,16 @@
+{
+  "name": "Dear",
+  "short_name": "Dear",
+  "description": "A quiet place for the two of us.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF7F1",
+  "theme_color": "#FBF7F1",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

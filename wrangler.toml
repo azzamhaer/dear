@@ -1,0 +1,22 @@
+name = "dear"
+compatibility_date = "2024-11-12"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+# --- D1 (Database) ---
+[[d1_databases]]
+binding = "DB"
+database_name = "dear-db"
+database_id = "5814d41a-0970-4dde-855a-6361077b3d22"
+migrations_dir = "drizzle/migrations"
+
+# --- R2 (Media) ---
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "dear-media"
+
+# --- Environment variables ---
+# Use `wrangler pages secret put SESSION_SECRET` for production.
+# For local dev, put it in `.dev.vars`.
+[vars]
+# (leave empty; secrets are set separately)

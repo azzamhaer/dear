@@ -1,0 +1,82 @@
+export function cn(...classes: Array<string | false | null | undefined>): string {
+  return classes.filter(Boolean).join(" ");
+}
+
+export function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60) || "untitled";
+}
+
+export function toUnixSeconds(date: Date | string | number): number {
+  const d =
+    date instanceof Date
+      ? date
+      : typeof date === "number"
+        ? new Date(date)
+        : new Date(date);
+  return Math.floor(d.getTime() / 1000);
+}
+
+export function fromUnixSeconds(s: number): Date {
+  return new Date(s * 1000);
+}
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+export function formatLongDate(d: Date): string {
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+export function formatRelative(d: Date): string {
+  const now = Date.now();
+  const diff = now - d.getTime();
+  const seconds = Math.round(diff / 1000);
+  const minutes = Math.round(seconds / 60);
+  const hours = Math.round(minutes / 60);
+  const days = Math.round(hours / 24);
+  if (seconds < 60) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  return formatLongDate(d);
+}
+
+export const MOODS = [
+  { id: "love",        emoji: "💗", label: "in love" },
+  { id: "happy",       emoji: "🌞", label: "happy" },
+  { id: "calm",        emoji: "🌿", label: "calm" },
+  { id: "nostalgic",   emoji: "🍂", label: "nostalgic" },
+  { id: "bittersweet", emoji: "🌙", label: "bittersweet" },
+  { id: "grateful",    emoji: "✨", label: "grateful" },
+  { id: "silly",       emoji: "🎈", label: "silly" },
+  { id: "cozy",        emoji: "🍵", label: "cozy" },
+] as const;
+
+export type MoodId = (typeof MOODS)[number]["id"];
+
+export function moodLabel(id: string | null | undefined): string | null {
+  if (!id) return null;
+  return MOODS.find((m) => m.id === id)?.label ?? id;
+}
+
+export function moodEmoji(id: string | null | undefined): string | null {
+  if (!id) return null;
+  return MOODS.find((m) => m.id === id)?.emoji ?? null;
+}
+
+export const REACTION_EMOJIS = ["heart", "cry", "hug", "moon"] as const;
+export const REACTION_DISPLAY: Record<(typeof REACTION_EMOJIS)[number], string> = {
+  heart: "💗",
+  cry: "😭",
+  hug: "🫂",
+  moon: "🌙",
+};

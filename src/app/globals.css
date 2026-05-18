@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #FBF7F1;
+  --bg-soft: #F6EFE4;
+  --ink: #1F1A17;
+  --ink-soft: #6B5F57;
+  --rose: #D4A5A5;
+  --rose-soft: #F4E2E2;
+  --line: rgba(31, 26, 23, 0.07);
+}
+
+* { -webkit-font-smoothing: antialiased; }
+
+html, body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-feature-settings: "ss01" on, "cv11" on;
+}
+
+body {
+  background-image:
+    radial-gradient(1200px 600px at 10% -10%, rgba(212, 165, 165, 0.10), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(232, 201, 201, 0.08), transparent 60%),
+    radial-gradient(1100px 700px at 50% 120%, rgba(229, 214, 190, 0.15), transparent 70%);
+  background-attachment: fixed;
+  min-height: 100dvh;
+}
+
+/* Subtle film grain — gives the cinematic, analog feeling */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+main, header, nav, footer { position: relative; z-index: 1; }
+
+::selection {
+  background: rgba(212, 165, 165, 0.35);
+  color: var(--ink);
+}
+
+/* Glass card primitive */
+.glass {
+  background: rgba(255, 252, 246, 0.65);
+  backdrop-filter: saturate(140%) blur(14px);
+  -webkit-backdrop-filter: saturate(140%) blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 1px 0 rgba(31, 26, 23, 0.04),
+    0 12px 32px -16px rgba(31, 26, 23, 0.12);
+}
+
+.glass-soft {
+  background: rgba(251, 247, 241, 0.55);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  border: 1px solid rgba(31, 26, 23, 0.05);
+}
+
+.hairline { border-color: var(--line); }
+
+/* Polaroid-style media frame */
+.frame-soft {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 1px 2px rgba(31, 26, 23, 0.04),
+    0 18px 40px -20px rgba(31, 26, 23, 0.18);
+}
+
+/* Skeleton shimmer */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(31, 26, 23, 0.04) 0%,
+    rgba(31, 26, 23, 0.08) 50%,
+    rgba(31, 26, 23, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* Input reset */
+input, textarea, select, button {
+  font: inherit;
+  color: inherit;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid rgba(212, 165, 165, 0.45);
+  outline-offset: 2px;
+}
+
+/* Scrollbar — subtle, warm */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(31, 26, 23, 0.2) transparent;
+}
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(31, 26, 23, 0.15);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(31, 26, 23, 0.25); }
+
+/* Hide caret on lightbox close button etc */
+button { -webkit-tap-highlight-color: transparent; }
+
+/* For loading states & shimmery placeholders inside media boxes */
+.placeholder {
+  background:
+    radial-gradient(60% 80% at 50% 30%, rgba(212, 165, 165, 0.16), transparent 70%),
+    linear-gradient(180deg, #F4E9D9 0%, #EFE0CC 100%);
+}

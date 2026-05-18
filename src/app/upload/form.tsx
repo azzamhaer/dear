@@ -1,0 +1,164 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { UploadZone, type UploadedItem } from "@/components/upload-zone";
+import { MoodPicker } from "@/components/mood-picker";
+
+interface Props {
+  albums: Array<{ id: string; name: string }>;
+}
+
+function todayLocalISO(): string {
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - off * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
+export function UploadForm({ albums }: Props) {
+  const router = useRouter();
+  const [media, setMedia] = useState<UploadedItem[]>([]);
+  const [caption, setCaption] = useState("");
+  const [date, setDate] = useState(todayLocalISO());
+  const [location, setLocation] = useState("");
+  const [mood, setMood] = useState<string | null>(null);
+  const [albumId, setAlbumId] = useState<string>("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save() {
+    if (media.length === 0 && !caption.trim()) {
+      setError("Add a photo, a video, or at least a few words.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/memories", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          caption,
+          memoryDate: new Date(date).toISOString(),
+          location: location || undefined,
+          mood: mood || undefined,
+          albumId: albumId || null,
+          media: media.map((m) => ({
+            r2Key: m.r2Key,
+            kind: m.kind,
+            mimeType: m.mimeType,
+            bytes: m.bytes,
+          })),
+        }),
+      });
+      if (!res.ok) throw new Error("Couldn't save");
+      const j = (await res.json()) as { id: string };
+      router.push(`/memory/${j.id}`);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <section className="glass rounded-3xl p-5 shadow-soft sm:p-6">
+        <UploadZone value={media} onChange={setMedia} />
+      </section>
+
+      <section className="glass space-y-5 rounded-3xl p-5 shadow-soft sm:p-6">
+        <div>
+          <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
+            A few words
+          </label>
+          <textarea
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            rows={4}
+            placeholder="What do you want to remember about this?"
+            className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 font-serif text-[17px] leading-relaxed outline-none transition focus:border-rose-dusty/40"
+          />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Date">
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
+            />
+          </Field>
+          <Field label="Place (optional)">
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="The kitchen, Kyoto, the long drive…"
+              className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
+            />
+          </Field>
+        </div>
+
+        <Field label="Mood (optional)">
+          <MoodPicker value={mood} onChange={setMood} />
+        </Field>
+
+        {albums.length > 0 ? (
+          <Field label="Album (optional)">
+            <select
+              value={albumId}
+              onChange={(e) => setAlbumId(e.target.value)}
+              className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
+            >
+              <option value="">— none —</option>
+              {albums.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        ) : null}
+      </section>
+
+      {error ? (
+        <div className="rounded-2xl border border-rose-dusty/30 bg-rose-mist/40 px-4 py-3 text-sm text-ink-700">
+          {error}
+        </div>
+      ) : null}
+
+      <div className="flex items-center justify-end gap-3 pb-4">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="rounded-full px-5 py-2.5 text-sm text-ink-500 hover:text-ink-900"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="rounded-full bg-ink-900 px-6 py-2.5 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-60"
+        >
+          {saving ? "Saving…" : "Save memory"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
