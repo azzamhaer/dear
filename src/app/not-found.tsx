@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+export const runtime = "edge";
+
 export default function NotFound() {
   return (
     <div className="mx-auto max-w-md py-20 text-center">
