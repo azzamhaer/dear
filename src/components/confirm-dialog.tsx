@@ -56,7 +56,11 @@ export function ConfirmDialog({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
           className="fixed inset-0 z-[9998] grid place-items-center bg-ink-900/35 p-4 backdrop-blur-sm"
-          onClick={() => !busy && onCancel()}
+          onPointerDown={(e) => {
+            if (e.target === e.currentTarget && !busy) {
+              onCancel();
+            }
+          }}
         >
           <motion.div
             initial={{ opacity: 0, y: 16, scale: 0.96 }}

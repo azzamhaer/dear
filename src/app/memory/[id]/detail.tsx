@@ -21,7 +21,7 @@ export function MemoryDetail({
   // Close on outside click / Esc
   useEffect(() => {
     if (!open) return;
-    const onClick = (e: MouseEvent) => {
+    const onClick = (e: Event) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
@@ -30,9 +30,11 @@ export function MemoryDetail({
       if (e.key === "Escape") setOpen(false);
     };
     document.addEventListener("mousedown", onClick);
+    document.addEventListener("touchstart", onClick);
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("touchstart", onClick);
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
