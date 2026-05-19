@@ -52,10 +52,7 @@ export function OnThisDayStrip() {
         <AnimatePresence>
           {items.slice(0, 8).map((it) => {
             const first = it.media[0];
-            const date =
-              it.memory.memoryDate instanceof Date
-                ? it.memory.memoryDate
-                : new Date((it.memory.memoryDate as unknown as number) * 1000);
+            const date = new Date(it.memory.memoryDate);
             const year = date.getUTCFullYear();
             return (
               <motion.div

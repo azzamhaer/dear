@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Reorder, motion, AnimatePresence } from "framer-motion";
 
 export interface UploadedItem {
   r2Key: string;
@@ -76,6 +76,20 @@ export function UploadZone({ value, onChange }: Props) {
       const arr = Array.from(files);
       if (arr.length === 0) return;
       setError(null);
+
+      // Validation
+      const MAX_BYTES = 50 * 1024 * 1024;
+      for (const f of arr) {
+        if (!f.type.startsWith("image/")) {
+          setError(`File "${f.name}" bukan foto. Hanya file foto yang diperbolehkan.`);
+          return;
+        }
+        if (f.size > MAX_BYTES) {
+          setError(`File "${f.name}" terlalu besar (maksimal 50MB).`);
+          return;
+        }
+      }
+
       setUploading(true);
       setProgress(0);
       setPhase(
@@ -104,9 +118,13 @@ export function UploadZone({ value, onChange }: Props) {
         onChange([...value, ...newItems]);
         setProgress(100);
       } catch (e) {
-        setError(
-          e instanceof Error ? e.message : "Ada yang tidak beres saat unggah.",
-        );
+        let errMsg = "Ada yang tidak beres saat unggah.";
+        if (e instanceof Error) {
+          if (e.message.includes("413") || e.message.includes("file_too_large")) errMsg = "Ada berkas yang terlalu besar (maks. 50MB).";
+          else if (e.message.includes("415") || e.message.includes("unsupported_type")) errMsg = "Format berkas tidak didukung, pastikan hanya mengunggah foto.";
+          else errMsg = e.message;
+        }
+        setError(errMsg);
         for (const p of previews) URL.revokeObjectURL(p.url);
       } finally {
         // Brief delay so the 100% state is visible
@@ -201,17 +219,23 @@ export function UploadZone({ value, onChange }: Props) {
       ) : null}
 
       {value.length > 0 && (
-        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        <Reorder.Group
+          axis="y"
+          values={value}
+          onReorder={onChange}
+          className="grid grid-cols-3 gap-2 sm:grid-cols-4"
+        >
           <AnimatePresence>
             {value.map((it, i) => (
-              <motion.li
+              <Reorder.Item
                 key={it.r2Key}
+                value={it}
                 initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.92 }}
-                className="relative overflow-hidden rounded-2xl"
+                className="relative overflow-hidden rounded-2xl cursor-grab active:cursor-grabbing"
               >
-                <div className="aspect-square w-full placeholder">
+                <div className="aspect-square w-full placeholder pointer-events-none">
                   {it.kind === "image" ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -230,16 +254,17 @@ export function UploadZone({ value, onChange }: Props) {
                 </div>
                 <button
                   type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
                   onClick={() => removeAt(i)}
                   className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-ink-900/60 text-cream-50 backdrop-blur transition hover:bg-ink-900/80"
                   aria-label="Hapus"
                 >
                   <XIcon className="h-3 w-3" />
                 </button>
-              </motion.li>
+              </Reorder.Item>
             ))}
           </AnimatePresence>
-        </ul>
+        </Reorder.Group>
       )}
     </div>
   );

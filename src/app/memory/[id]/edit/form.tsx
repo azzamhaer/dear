@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MoodPicker } from "@/components/mood-picker";
 import { wibLocalToIso } from "@/lib/wib";
+import { UploadZone, UploadedItem } from "@/components/upload-zone";
 
 interface Initial {
   caption: string;
@@ -11,6 +12,7 @@ interface Initial {
   location: string;
   mood: string | null;
   albumId: string;
+  media: UploadedItem[];
 }
 
 export function EditForm({
@@ -40,6 +42,13 @@ export function EditForm({
           location: v.location || null,
           mood: v.mood || null,
           albumId: v.albumId || null,
+          media: v.media.map((m) => ({
+            r2Key: m.r2Key,
+            kind: m.kind,
+            mimeType: m.mimeType,
+            bytes: m.bytes,
+            name: m.name,
+          })),
         }),
       });
       if (!res.ok) throw new Error("Belum bisa disimpan.");
@@ -66,6 +75,13 @@ export function EditForm({
             className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 font-serif text-[17px] leading-relaxed outline-none transition focus:border-rose-dusty/40"
           />
         </div>
+
+        <Field label="Foto (Seret untuk menyusun urutan)">
+          <UploadZone
+            value={v.media}
+            onChange={(media) => setV({ ...v, media })}
+          />
+        </Field>
 
         <Field label="Kapan (WIB)">
           <input

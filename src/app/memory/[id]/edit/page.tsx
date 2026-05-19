@@ -48,6 +48,14 @@ export default async function EditPage({
           location: item.memory.location ?? "",
           mood: item.memory.mood ?? null,
           albumId: item.memory.albumId ?? "",
+          media: item.media.map(m => ({
+            r2Key: m.r2Key,
+            kind: m.kind as "image" | "video",
+            mimeType: m.mimeType,
+            bytes: m.bytes || 0,
+            name: m.r2Key.split("/").pop() || "",
+            previewUrl: `/api/media/${m.r2Key}`
+          }))
         }}
         albums={allAlbums}
       />

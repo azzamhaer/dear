@@ -4,7 +4,7 @@ import { db } from "@/lib/cloudflare";
 import { media, memories } from "@/db/schema";
 import { requireUser } from "@/lib/session";
 import { getMemory } from "@/lib/queries";
-import { deleteMedia } from "@/lib/r2";
+import { deleteMedia, putMedia } from "@/lib/r2";
 
 export const runtime = "edge";
 
@@ -29,6 +29,13 @@ interface PatchBody {
   location?: string | null;
   mood?: string | null;
   albumId?: string | null;
+  media?: Array<{
+    r2Key: string;
+    kind: "image" | "video";
+    mimeType: string;
+    bytes: number;
+    name: string;
+  }>;
 }
 
 export async function PATCH(
@@ -59,6 +66,50 @@ export async function PATCH(
   if (body.albumId !== undefined) updates.albumId = body.albumId || null;
 
   await db().update(memories).set(updates).where(eq(memories.id, id));
+
+  if (body.media && Array.isArray(body.media)) {
+    const d = db();
+    // Get existing media
+    const existingMedia = await d
+      .select()
+      .from(media)
+      .where(eq(media.memoryId, id));
+
+    const newMediaKeys = new Set(body.media.map((m) => m.r2Key));
+
+    // Find media to delete
+    const toDelete = existingMedia.filter((em) => !newMediaKeys.has(em.r2Key));
+    
+    // Delete from DB and R2
+    for (const del of toDelete) {
+      await d.delete(media).where(eq(media.id, del.id));
+      await deleteMedia(del.r2Key).catch(() => {});
+    }
+
+    // Insert or update positions
+    const { newId } = await import("@/lib/crypto");
+    for (let i = 0; i < body.media.length; i++) {
+      const m = body.media[i];
+      const exist = existingMedia.find((em) => em.r2Key === m.r2Key);
+      if (exist) {
+        await d
+          .update(media)
+          .set({ position: i })
+          .where(eq(media.id, exist.id));
+      } else {
+        await d.insert(media).values({
+          id: newId(),
+          memoryId: id,
+          kind: m.kind,
+          r2Key: m.r2Key,
+          mimeType: m.mimeType,
+          bytes: m.bytes,
+          position: i,
+        });
+      }
+    }
+  }
+
   const updated = await getMemory(id);
   return NextResponse.json({ item: updated });
 }
