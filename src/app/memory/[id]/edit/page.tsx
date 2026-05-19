@@ -6,6 +6,7 @@ import { getMemory } from "@/lib/queries";
 import { getCurrentUser } from "@/lib/session";
 import { EditForm } from "./form";
 import { PageHeader } from "@/components/page-header";
+import { BackButton } from "@/components/back-button";
 import { dateToWibLocal } from "@/lib/wib";
 
 export const runtime = "edge";
@@ -35,6 +36,9 @@ export default async function EditPage({
 
   return (
     <>
+      <div className="pt-2">
+        <BackButton href={`/memory/${id}`} label="Kenangan" />
+      </div>
       <PageHeader eyebrow="ubah" title="Sentuh lagi kenangan ini." />
       <EditForm
         memoryId={item.memory.id}

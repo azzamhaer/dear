@@ -59,6 +59,7 @@ export default async function RootLayout({
         {user ? (
           <Nav
             user={{
+              username: user.username,
               displayName: user.displayName,
               avatarUrl: user.avatarUrl ?? null,
             }}

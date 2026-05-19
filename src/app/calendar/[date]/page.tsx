@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { listMemories } from "@/lib/queries";
 import { getCurrentUser } from "@/lib/session";
 import { PageHeader } from "@/components/page-header";
 import { MemoryFeed } from "@/components/memory-feed";
+import { BackButton } from "@/components/back-button";
 import { formatLongDate } from "@/lib/utils";
 
 export const runtime = "edge";
@@ -40,18 +40,10 @@ export default async function CalendarDayPage({
 
   return (
     <>
-      <PageHeader
-        eyebrow="hari itu"
-        title={formatLongDate(dateObj)}
-        right={
-          <Link
-            href="/calendar"
-            className="rounded-full px-3 py-1.5 text-sm text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
-          >
-            ← Kalender
-          </Link>
-        }
-      />
+      <div className="pt-2">
+        <BackButton href="/calendar" label="Kalender" />
+      </div>
+      <PageHeader eyebrow="hari itu" title={formatLongDate(dateObj)} />
       <MemoryFeed
         initial={items}
         currentUserId={user?.id}

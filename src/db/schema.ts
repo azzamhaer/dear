@@ -15,6 +15,7 @@ export const users = sqliteTable("users", {
   passwordHash: text("password_hash").notNull(),
   passwordSalt: text("password_salt").notNull(),
   avatarUrl: text("avatar_url"),
+  bio: text("bio"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),

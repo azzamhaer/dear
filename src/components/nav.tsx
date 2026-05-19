@@ -6,7 +6,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface NavProps {
-  user: { displayName: string; avatarUrl: string | null };
+  user: { username: string; displayName: string; avatarUrl: string | null };
 }
 
 const links = [
@@ -47,7 +47,7 @@ export function Nav({ user }: NavProps) {
               key={l.href}
               href={l.href}
               className={cn(
-                "rounded-full px-3 py-1.5 text-sm transition",
+                "whitespace-nowrap rounded-full px-3 py-1.5 text-sm transition",
                 isActive(l.href)
                   ? "bg-ink-900/[0.06] text-ink-900"
                   : "text-ink-500 hover:text-ink-900",
@@ -66,7 +66,6 @@ export function Nav({ user }: NavProps) {
           >
             <PlusIcon className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Kenangan baru</span>
-            <span className="sm:hidden">+</span>
           </Link>
           <button
             onClick={() => setMenuOpen((v) => !v)}
@@ -82,14 +81,14 @@ export function Nav({ user }: NavProps) {
       </div>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed bottom-3 left-1/2 z-30 -translate-x-1/2 md:hidden">
-        <div className="glass flex items-center gap-1 rounded-full px-1.5 py-1.5 shadow-soft">
+      <nav className="fixed bottom-3 left-1/2 z-30 w-[calc(100%-1.5rem)] max-w-[420px] -translate-x-1/2 md:hidden bottom-safe">
+        <div className="glass flex items-center justify-between gap-0.5 rounded-full px-1.5 py-1.5 shadow-soft">
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
               className={cn(
-                "rounded-full px-2.5 py-1.5 text-[11px] transition",
+                "whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] leading-none transition",
                 isActive(l.href)
                   ? "bg-ink-900 text-cream-50"
                   : "text-ink-500 hover:text-ink-900",
@@ -107,7 +106,7 @@ export function Nav({ user }: NavProps) {
           onClick={() => setMenuOpen(false)}
         >
           <div
-            className="glass absolute right-3 top-14 w-56 rounded-2xl p-2 shadow-soft"
+            className="glass-strong absolute right-3 top-14 w-56 rounded-2xl p-2 shadow-soft"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="border-b border-ink-900/5 px-3 py-2">
@@ -117,9 +116,16 @@ export function Nav({ user }: NavProps) {
               <div className="font-medium">{user.displayName}</div>
             </div>
             <Link
-              href="/settings"
+              href={`/profile/${user.username}`}
               onClick={() => setMenuOpen(false)}
               className="mt-1 block w-full rounded-xl px-3 py-2 text-left text-sm text-ink-700 hover:bg-ink-900/5"
+            >
+              Profil saya
+            </Link>
+            <Link
+              href="/settings"
+              onClick={() => setMenuOpen(false)}
+              className="block w-full rounded-xl px-3 py-2 text-left text-sm text-ink-700 hover:bg-ink-900/5"
             >
               Pengaturan
             </Link>

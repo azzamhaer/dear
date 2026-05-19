@@ -6,6 +6,7 @@ import { moodEmoji, moodLabel } from "@/lib/utils";
 import { formatWibDisplay } from "@/lib/wib";
 import { mediaUrl } from "@/lib/r2";
 import { Avatar } from "@/components/avatar";
+import { BackButton } from "@/components/back-button";
 import { MemoryDetail } from "./detail";
 import { MemoryMediaGallery } from "./gallery";
 import { MemoryDetailComments } from "./detail-comments";
@@ -31,14 +32,9 @@ export default async function MemoryPage({
       : new Date((item.memory.memoryDate as unknown as number) * 1000);
 
   return (
-    <article className="space-y-6 pt-4">
+    <article className="space-y-6 pt-2">
       <header className="flex items-start justify-between gap-3">
-        <Link
-          href="/"
-          className="rounded-full px-3 py-1.5 text-sm text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
-        >
-          ← Kembali
-        </Link>
+        <BackButton label="Kembali" />
         <MemoryDetail
           memoryId={item.memory.id}
           canEdit={user?.id === item.memory.authorId}
@@ -46,10 +42,13 @@ export default async function MemoryPage({
       </header>
 
       <div className="text-center">
-        <div className="mb-3 flex items-center justify-center gap-2 text-sm text-ink-500">
+        <Link
+          href={`/profile/${item.author.username}`}
+          className="mb-3 inline-flex items-center gap-2 text-sm text-ink-500 hover:text-ink-900"
+        >
           <Avatar src={item.author.avatarUrl} name={item.author.displayName} size={28} />
           <span>{item.author.displayName}</span>
-        </div>
+        </Link>
         <div className="text-xs uppercase tracking-[0.2em] text-ink-400">
           {formatWibDisplay(date)}
         </div>

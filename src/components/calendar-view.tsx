@@ -32,7 +32,6 @@ export function CalendarView({
 
   const days = useMemo(() => buildMonth(year, month), [year, month]);
 
-  // Today in WIB
   const todayYmd = useMemo(() => {
     const wib = new Date(Date.now() + 7 * 3600 * 1000);
     return `${wib.getUTCFullYear()}-${String(wib.getUTCMonth() + 1).padStart(2, "0")}-${String(wib.getUTCDate()).padStart(2, "0")}`;
@@ -44,9 +43,18 @@ export function CalendarView({
     setMonth(next.getUTCMonth() + 1);
   }
 
+  // Year range: from 2000 to current+1
+  const wibNow = useMemo(() => new Date(Date.now() + 7 * 3600 * 1000), []);
+  const currentYear = wibNow.getUTCFullYear();
+  const years = useMemo(() => {
+    const out: number[] = [];
+    for (let y = currentYear + 1; y >= 2000; y--) out.push(y);
+    return out;
+  }, [currentYear]);
+
   return (
     <div className="glass rounded-3xl p-5 shadow-soft sm:p-6">
-      <header className="flex items-center justify-between pb-4">
+      <header className="flex items-center justify-between gap-2 pb-4">
         <button
           onClick={() => shift(-1)}
           className="rounded-full p-2 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
@@ -54,12 +62,24 @@ export function CalendarView({
         >
           <ChevIcon className="h-4 w-4 -scale-x-100" />
         </button>
-        <div className="text-center">
-          <div className="font-display text-xl italic">
-            {MONTHS[month - 1]}
-          </div>
-          <div className="text-xs text-ink-400">{year}</div>
+
+        <div className="flex items-center gap-1.5">
+          <PickerSelect
+            ariaLabel="Pilih bulan"
+            value={month}
+            onChange={setMonth}
+            options={MONTHS.map((m, i) => ({ value: i + 1, label: m }))}
+            className="font-display text-lg italic"
+          />
+          <PickerSelect
+            ariaLabel="Pilih tahun"
+            value={year}
+            onChange={setYear}
+            options={years.map((y) => ({ value: y, label: String(y) }))}
+            className="text-sm tabular-nums"
+          />
         </div>
+
         <button
           onClick={() => shift(1)}
           className="rounded-full p-2 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
@@ -102,13 +122,11 @@ export function CalendarView({
             >
               <Link
                 href={`/calendar/${ymd}`}
-                className={`relative grid h-full w-full place-items-center rounded-xl text-sm transition hover:scale-[1.03] ${bgByIntensity[intensity]} ${
+                className={`relative grid h-full w-full place-items-center rounded-xl text-sm transition hover:scale-[1.04] active:scale-[0.97] ${bgByIntensity[intensity]} ${
                   isToday ? "ring-2 ring-ink-900/40" : ""
                 }`}
                 title={
-                  count
-                    ? `${count} kenangan di tanggal ${d}`
-                    : `tanggal ${d}`
+                  count ? `${count} kenangan di tanggal ${d}` : `tanggal ${d}`
                 }
               >
                 <span className="font-medium">{d}</span>
@@ -127,9 +145,57 @@ export function CalendarView({
         })}
       </div>
 
-      <p className="mt-4 text-center text-xs text-ink-400">
-        Hari yang lebih pekat menyimpan lebih banyak kenangan.
-      </p>
+      <div className="mt-4 flex items-center justify-between text-xs text-ink-400">
+        <button
+          onClick={() => {
+            setYear(currentYear);
+            setMonth(wibNow.getUTCMonth() + 1);
+          }}
+          className="rounded-full bg-ink-900/[0.05] px-3 py-1 text-ink-500 hover:bg-ink-900/[0.08]"
+        >
+          Hari ini
+        </button>
+        <span>Hari yang lebih pekat menyimpan lebih banyak.</span>
+      </div>
+    </div>
+  );
+}
+
+function PickerSelect<T extends string | number>({
+  value,
+  onChange,
+  options,
+  ariaLabel,
+  className,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: Array<{ value: T; label: string }>;
+  ariaLabel: string;
+  className?: string;
+}) {
+  return (
+    <div className="relative">
+      <select
+        aria-label={ariaLabel}
+        value={String(value)}
+        onChange={(e) => {
+          const raw = e.target.value;
+          const next =
+            typeof value === "number" ? (Number(raw) as T) : (raw as T);
+          onChange(next);
+        }}
+        className={`cursor-pointer appearance-none rounded-2xl bg-cream-50/70 px-3 py-1.5 pr-7 backdrop-blur transition hover:bg-cream-50 ${className ?? ""}`}
+      >
+        {options.map((o) => (
+          <option key={String(o.value)} value={String(o.value)}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-ink-400">
+        <ChevIcon className="h-3 w-3 rotate-90" />
+      </span>
     </div>
   );
 }

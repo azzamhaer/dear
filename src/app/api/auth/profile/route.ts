@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest) {
     return r as Response;
   }
   const body = (await req.json().catch(() => null)) as
-    | { displayName?: string; avatarKey?: string | null }
+    | { displayName?: string; avatarKey?: string | null; bio?: string | null }
     | null;
   if (!body) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
@@ -34,6 +34,13 @@ export async function PATCH(req: NextRequest) {
     updates.avatarUrl = body.avatarKey
       ? `/api/media/${encodeURI(body.avatarKey)}`
       : null;
+  }
+  if (body.bio !== undefined) {
+    const b = (body.bio ?? "").toString().trim();
+    if (b.length > 300) {
+      return NextResponse.json({ error: "bio_too_long" }, { status: 400 });
+    }
+    updates.bio = b || null;
   }
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: "nothing_to_update" }, { status: 400 });

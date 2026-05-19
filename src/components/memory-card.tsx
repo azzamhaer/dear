@@ -45,7 +45,10 @@ export function MemoryCard({ item, index = 0, currentUserId }: Props) {
       >
         {/* Header */}
         <header className="flex items-center justify-between px-5 pt-5 sm:px-6 sm:pt-6">
-          <div className="flex items-center gap-3">
+          <Link
+            href={`/profile/${author.username}`}
+            className="flex items-center gap-3 -m-1 rounded-full p-1 transition hover:bg-ink-900/[0.03]"
+          >
             <Avatar src={author.avatarUrl} name={author.displayName} size={36} />
             <div className="leading-tight">
               <div className="text-sm font-medium text-ink-900">
@@ -61,7 +64,7 @@ export function MemoryCard({ item, index = 0, currentUserId }: Props) {
                 ) : null}
               </div>
             </div>
-          </div>
+          </Link>
           <div className="flex items-center gap-2">
             {memory.mood ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-rose-mist/60 px-2.5 py-1 text-xs text-ink-700">

@@ -8,6 +8,7 @@ interface UserShape {
   username: string;
   displayName: string;
   avatarUrl: string | null;
+  bio: string;
 }
 
 export function SettingsForms({ user }: { user: UserShape }) {
@@ -22,6 +23,7 @@ export function SettingsForms({ user }: { user: UserShape }) {
 function ProfileForm({ user }: { user: UserShape }) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState(user.displayName);
+  const [bio, setBio] = useState(user.bio);
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -58,20 +60,20 @@ function ProfileForm({ user }: { user: UserShape }) {
     }
   }
 
-  async function saveName() {
+  async function saveProfile() {
     setSaving(true);
     setStatus(null);
     try {
       const res = await fetch("/api/auth/profile", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ displayName }),
+        body: JSON.stringify({ displayName, bio }),
       });
       if (!res.ok) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(j.error ?? "Belum bisa diganti.");
       }
-      setStatus("Nama diganti.");
+      setStatus("Tersimpan.");
       router.refresh();
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "Ada yang tidak beres.");
@@ -132,6 +134,23 @@ function ProfileForm({ user }: { user: UserShape }) {
 
       <div>
         <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
+          Bio
+        </label>
+        <textarea
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          rows={3}
+          maxLength={300}
+          placeholder="Beberapa kata tentangmu, sependek atau sepanjang yang kamu mau…"
+          className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 font-serif text-[15.5px] leading-relaxed outline-none transition focus:border-rose-dusty/40"
+        />
+        <p className="mt-1 text-right text-xs text-ink-400">
+          {bio.length}/300
+        </p>
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
           Username (untuk masuk)
         </label>
         <input
@@ -153,9 +172,11 @@ function ProfileForm({ user }: { user: UserShape }) {
 
       <div className="flex justify-end">
         <button
-          onClick={saveName}
+          onClick={saveProfile}
           disabled={
-            saving || displayName === user.displayName || !displayName.trim()
+            saving ||
+            !displayName.trim() ||
+            (displayName === user.displayName && bio === user.bio)
           }
           className="rounded-full bg-ink-900 px-5 py-2.5 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-60"
         >

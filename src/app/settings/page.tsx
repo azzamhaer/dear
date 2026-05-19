@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { PageHeader } from "@/components/page-header";
+import { BackButton } from "@/components/back-button";
 import { SettingsForms } from "./forms";
 
 export const runtime = "edge";
@@ -12,10 +13,13 @@ export default async function SettingsPage() {
 
   return (
     <>
+      <div className="pt-2">
+        <BackButton label="Kembali" />
+      </div>
       <PageHeader
         eyebrow="pengaturan"
         title="Tentangmu."
-        subtitle="Ubah nama, foto, atau kata sandi sesukamu."
+        subtitle="Ubah nama, foto, bio, atau kata sandi sesukamu."
       />
       <SettingsForms
         user={{
@@ -23,6 +27,7 @@ export default async function SettingsPage() {
           username: user.username,
           displayName: user.displayName,
           avatarUrl: user.avatarUrl ?? null,
+          bio: user.bio ?? "",
         }}
       />
     </>
