@@ -68,7 +68,7 @@ export default async function RootLayout({
         <main
           className={
             user
-              ? "mx-auto w-full max-w-3xl px-4 pb-24 pt-4 sm:px-6"
+              ? "mx-auto w-full max-w-3xl px-4 pb-28 pt-4 sm:px-6 md:pb-12"
               : "min-h-dvh"
           }
         >

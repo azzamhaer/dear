@@ -6,6 +6,7 @@ import { mediaUrl } from "@/lib/r2";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { BackButton } from "@/components/back-button";
+import { AlbumActions } from "./actions";
 import { AlbumGrid } from "./grid";
 
 export const runtime = "edge";
@@ -61,6 +62,7 @@ export default async function AlbumPage({
             ? `${memoryRows.length} kenangan tersimpan di sini`
             : undefined)
         }
+        right={<AlbumActions albumId={album.id} albumName={album.name} />}
       />
 
       {memoryRows.length === 0 ? (
@@ -71,8 +73,6 @@ export default async function AlbumPage({
         />
       ) : (
         <AlbumGrid
-          albumId={album.id}
-          albumName={album.name}
           items={memoryRows.map((m) => {
             const cov = firstMediaByMemory.get(m.id);
             return {

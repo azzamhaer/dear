@@ -12,18 +12,11 @@ interface GridItem {
   cover: { url: string; kind: "image" | "video" } | null;
 }
 
-interface Props {
-  albumId: string;
-  albumName: string;
-  items: GridItem[];
-}
-
-export function AlbumGrid({ albumId, albumName, items }: Props) {
+export function AlbumGrid({ items }: { items: GridItem[] }) {
   const router = useRouter();
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmBulk, setConfirmBulk] = useState(false);
-  const [confirmAlbum, setConfirmAlbum] = useState(false);
   const [busy, setBusy] = useState(false);
 
   function toggle(id: string) {
@@ -56,18 +49,6 @@ export function AlbumGrid({ albumId, albumName, items }: Props) {
     }
   }
 
-  async function deleteAlbum() {
-    setBusy(true);
-    try {
-      await fetch(`/api/albums/${albumId}`, { method: "DELETE" });
-      router.push("/albums");
-      router.refresh();
-    } finally {
-      setBusy(false);
-      setConfirmAlbum(false);
-    }
-  }
-
   const selCount = selected.size;
 
   return (
@@ -89,20 +70,12 @@ export function AlbumGrid({ albumId, albumName, items }: Props) {
             </div>
           </>
         ) : (
-          <>
-            <button
-              onClick={() => setSelectMode(true)}
-              className="rounded-full bg-cream-50/60 px-3 py-1.5 text-xs text-ink-700 backdrop-blur hover:bg-cream-50/90"
-            >
-              Pilih kenangan
-            </button>
-            <button
-              onClick={() => setConfirmAlbum(true)}
-              className="rounded-full bg-rose-mist/50 px-3 py-1.5 text-xs text-rose-dustier hover:bg-rose-mist"
-            >
-              Hapus album
-            </button>
-          </>
+          <button
+            onClick={() => setSelectMode(true)}
+            className="rounded-full bg-cream-50/60 px-3 py-1.5 text-xs text-ink-700 backdrop-blur hover:bg-cream-50/90"
+          >
+            Pilih kenangan
+          </button>
         )}
       </div>
 
@@ -199,7 +172,7 @@ export function AlbumGrid({ albumId, albumName, items }: Props) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 24 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-20 left-1/2 z-30 -translate-x-1/2 md:bottom-8"
+            className="fixed bottom-24 left-1/2 z-30 -translate-x-1/2 md:bottom-8"
           >
             <div className="glass-strong flex items-center gap-2 rounded-full px-2.5 py-2 shadow-glow">
               <span className="px-3 text-sm text-ink-700">
@@ -224,16 +197,6 @@ export function AlbumGrid({ albumId, albumName, items }: Props) {
         busy={busy}
         onConfirm={bulkDelete}
         onCancel={() => setConfirmBulk(false)}
-      />
-
-      <ConfirmDialog
-        open={confirmAlbum}
-        title={`Hapus album "${albumName}"?`}
-        description="Kenangan di dalamnya tidak ikut hilang — hanya keluar dari album ini."
-        confirmLabel="Hapus album"
-        busy={busy}
-        onConfirm={deleteAlbum}
-        onCancel={() => setConfirmAlbum(false)}
       />
     </>
   );
