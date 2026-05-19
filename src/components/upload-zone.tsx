@@ -150,7 +150,7 @@ export function UploadZone({ value, onChange }: Props) {
           ref={inputRef}
           type="file"
           multiple
-          accept="image/*,video/*"
+          accept="image/*"
           className="sr-only"
           onChange={(e) =>
             e.target.files && handleFiles(e.target.files)
@@ -160,7 +160,7 @@ export function UploadZone({ value, onChange }: Props) {
           <UploadIcon className="h-5 w-5 text-ink-400" />
         </div>
         <div className="font-display text-lg text-ink-700">
-          Letakkan foto atau video di sini
+          Letakkan foto di sini
         </div>
         <div className="mt-1 text-sm text-ink-400">
           atau ketuk untuk memilih dari galeri

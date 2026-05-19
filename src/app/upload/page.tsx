@@ -26,7 +26,7 @@ export default async function UploadPage() {
       <PageHeader
         eyebrow="baru"
         title="Satu kenangan."
-        subtitle="Sebuah foto, sepotong video, beberapa kata."
+        subtitle="Sebuah foto, beberapa kata."
       />
       <UploadForm albums={allAlbums} />
     </>

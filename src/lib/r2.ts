@@ -6,7 +6,6 @@ const VIDEO_MIME = /^video\/(mp4|quicktime|webm|x-matroska)$/i;
 
 export function detectKind(mimeType: string): "image" | "video" | null {
   if (IMAGE_MIME.test(mimeType)) return "image";
-  if (VIDEO_MIME.test(mimeType)) return "video";
   return null;
 }
 

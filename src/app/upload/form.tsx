@@ -24,7 +24,7 @@ export function UploadForm({ albums }: Props) {
 
   async function save() {
     if (media.length === 0 && !caption.trim()) {
-      setError("Tambahkan foto, video, atau setidaknya beberapa kata.");
+      setError("Tambahkan foto, atau setidaknya beberapa kata.");
       return;
     }
     setSaving(true);
