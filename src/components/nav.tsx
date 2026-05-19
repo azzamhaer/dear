@@ -91,18 +91,24 @@ export function Nav({ user }: NavProps) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Link
             href="/upload"
-            className="inline-flex items-center gap-1.5 rounded-full bg-ink-900 px-3 py-1.5 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 sm:px-4"
+            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-ink-900 px-3 py-1.5 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 sm:px-4"
             aria-label="Kenangan baru"
           >
             <PlusIcon className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Kenangan baru</span>
           </Link>
 
-          {/* Avatar dropdown — anchored relative to its container */}
-          <div className="relative" ref={menuRef}>
+          {/* Avatar dropdown — anchored relative to its container.
+             Using inline styles to ensure positioning works regardless of
+             Tailwind JIT picking up arbitrary values. */}
+          <div
+            ref={menuRef}
+            style={{ position: "relative" }}
+            className="shrink-0"
+          >
             <button
               onClick={() => setMenuOpen((v) => !v)}
               className="rounded-full p-1 transition hover:bg-ink-900/[0.05]"
@@ -119,7 +125,15 @@ export function Nav({ user }: NavProps) {
             {menuOpen ? (
               <div
                 role="menu"
-                className="glass-strong absolute right-0 top-[calc(100%+8px)] z-50 w-60 rounded-2xl p-1.5 shadow-soft animate-fade-in"
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "100%",
+                  marginTop: 8,
+                  width: 240,
+                  zIndex: 50,
+                }}
+                className="glass-strong rounded-2xl p-1.5 shadow-soft animate-fade-in"
               >
                 <div className="border-b border-ink-900/5 px-3 py-2.5">
                   <div className="text-[10px] uppercase tracking-wider text-ink-400">
