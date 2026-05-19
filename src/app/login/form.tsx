@@ -25,7 +25,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(
           j.error === "invalid_credentials"
-            ? "Sepertinya bukan ini."
+            ? "Username atau password salah, benarkah kamu bagian dari hubungan ini?"
             : "Belum bisa membuka pintu. Coba lagi?",
         );
       }
@@ -80,7 +80,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         disabled={submitting}
         className="mt-2 w-full rounded-2xl bg-ink-900 px-4 py-3 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-60"
       >
-        {submitting ? "Membuka pintu…" : "Masuk"}
+        {submitting ? "Membuka gerbang…" : "Masuk"}
       </button>
     </form>
   );

@@ -19,7 +19,7 @@ export default async function SettingsPage() {
       <PageHeader
         eyebrow="pengaturan"
         title="Tentangmu."
-        subtitle="Ubah nama, foto, bio, atau kata sandi sesukamu."
+        subtitle="Ubah nama, foto, bio, atau kata sandi."
       />
       <SettingsForms
         user={{

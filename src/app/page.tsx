@@ -33,7 +33,7 @@ export default async function HomePage() {
         currentUserId={user?.id}
         pageSize={PAGE_SIZE}
         emptyTitle="Mulai dari sini."
-        emptyDescription="Upload sebuah foto atau video Karena sejatinya one photo worth than a thousand words."
+        emptyDescription="Upload sebuah foto atau video, karena sejatinya one photo worth than a thousand words."
         emptyCta={{ href: "/upload", label: "Simpan yang pertama" }}
       />
     </>

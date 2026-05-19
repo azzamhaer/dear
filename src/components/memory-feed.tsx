@@ -23,8 +23,8 @@ export function MemoryFeed({
   currentUserId,
   pageSize = 10,
   albumId,
-  emptyTitle = "Belum ada apa-apa.",
-  emptyDescription = "Saat kamu menyimpan satu kenangan, dia akan muncul di sini.",
+  emptyTitle = "Belum ada kenangan.",
+  emptyDescription = "Sepertinya kita belum menciptakan kenangan di tanggal ini.",
   emptyCta = { href: "/upload", label: "Tambah yang pertama" },
   paginate = true,
 }: Props) {

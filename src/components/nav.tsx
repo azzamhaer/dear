@@ -23,11 +23,11 @@ const mobileLinks: Array<{
   label: string;
   Icon: React.ComponentType<{ className?: string }>;
 }> = [
-  { href: "/", label: "Beranda", Icon: HomeIcon },
-  { href: "/albums", label: "Album", Icon: GridIcon },
-  { href: "/calendar", label: "Kalender", Icon: CalendarIcon },
-  { href: "/notes", label: "Catatan", Icon: NoteIcon },
-];
+    { href: "/", label: "Beranda", Icon: HomeIcon },
+    { href: "/albums", label: "Album", Icon: GridIcon },
+    { href: "/calendar", label: "Kalender", Icon: CalendarIcon },
+    { href: "/notes", label: "Catatan", Icon: NoteIcon },
+  ];
 
 export function Nav({ user }: NavProps) {
   const pathname = usePathname();
@@ -156,7 +156,7 @@ export function Nav({ user }: NavProps) {
                   className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-700 hover:bg-ink-900/5"
                 >
                   <SunIcon className="h-4 w-4 text-ink-400" />
-                  Hari ini, di waktu lain
+                  Date's Recap
                 </Link>
                 <Link
                   href="/settings"

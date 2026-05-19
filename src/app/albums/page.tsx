@@ -24,12 +24,12 @@ export default async function AlbumsPage() {
         <PageHeader
           eyebrow="koleksi"
           title="Album."
-          subtitle="Untuk kenangan yang terlalu mirip rasanya untuk dipisahkan, maka satukanlah."
+          subtitle="Teruntuk kenangan yang terlalu mirip rasanya untuk dipisahkan, maka satukanlah."
           right={<NewAlbumButton />}
         />
         <EmptyState
           title="Belum ada album."
-          description="Album menjaga akhir pekan, perjalanan, atau musim-musim hidup kita tetap rapi di satu tempat."
+          description="Album menjaga momen, perjalanan, atau musim-musim hidup kita tetap rapi di satu tempat yang abadi."
           icon="📔"
         />
       </>

@@ -68,13 +68,13 @@ export function NewAlbumButton() {
             <div className="mt-4 space-y-3">
               <input
                 autoFocus
-                placeholder="Nama (misal: Hari Minggu)"
+                placeholder="Nama (misal: Bucin di Eropa)"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
               />
               <textarea
-                placeholder="Sedikit penjelasan (opsional)"
+                placeholder="Deskripsi Album (opsional)"
                 rows={2}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
