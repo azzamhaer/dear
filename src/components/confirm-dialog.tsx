@@ -1,7 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface Props {
   open: boolean;
@@ -26,17 +27,27 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: Props) {
-  // ESC to close
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Lock body scroll while open + ESC closes
   useEffect(() => {
     if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !busy) onCancel();
     };
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    return () => {
+      window.removeEventListener("keydown", handler);
+      document.body.style.overflow = prevOverflow;
+    };
   }, [open, busy, onCancel]);
 
-  return (
+  if (!mounted) return null;
+
+  const content = (
     <AnimatePresence>
       {open ? (
         <motion.div
@@ -44,7 +55,7 @@ export function ConfirmDialog({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
-          className="fixed inset-0 z-[80] grid place-items-center bg-ink-900/30 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[9998] grid place-items-center bg-ink-900/35 p-4 backdrop-blur-sm"
           onClick={() => !busy && onCancel()}
         >
           <motion.div
@@ -53,7 +64,7 @@ export function ConfirmDialog({
             exit={{ opacity: 0, y: 8, scale: 0.98 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="glass w-full max-w-sm rounded-3xl p-6 shadow-soft"
+            className="glass-strong w-full max-w-sm rounded-3xl p-6 shadow-soft"
             role="dialog"
             aria-modal="true"
             aria-labelledby="confirm-title"
@@ -97,4 +108,6 @@ export function ConfirmDialog({
       ) : null}
     </AnimatePresence>
   );
+
+  return createPortal(content, document.body);
 }

@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface LightboxImage {
   url: string;
@@ -17,6 +18,9 @@ interface Props {
 
 export function Lightbox({ open, images, startIndex = 0, onClose }: Props) {
   const [index, setIndex] = useState(startIndex);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (open) setIndex(startIndex);
@@ -38,7 +42,6 @@ export function Lightbox({ open, images, startIndex = 0, onClose }: Props) {
       if (e.key === "ArrowLeft") prev();
     };
     window.addEventListener("keydown", onKey);
-    // Lock body scroll
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
@@ -47,10 +50,10 @@ export function Lightbox({ open, images, startIndex = 0, onClose }: Props) {
     };
   }, [open, next, prev, onClose]);
 
-  if (!images.length) return null;
+  if (!mounted || !images.length) return null;
   const current = images[Math.max(0, Math.min(index, images.length - 1))];
 
-  return (
+  const content = (
     <AnimatePresence>
       {open ? (
         <motion.div
@@ -58,21 +61,21 @@ export function Lightbox({ open, images, startIndex = 0, onClose }: Props) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-ink-900/90 backdrop-blur-lg"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-ink-900/92 backdrop-blur-lg"
           onClick={onClose}
         >
-          {/* Close button */}
+          {/* Close */}
           <button
             onClick={onClose}
             aria-label="Tutup"
-            className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-cream-50/10 text-cream-50 backdrop-blur transition hover:bg-cream-50/20"
+            className="absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full bg-cream-50/15 text-cream-50 backdrop-blur transition hover:bg-cream-50/25"
           >
             <XIcon className="h-4 w-4" />
           </button>
 
           {/* Counter */}
           {images.length > 1 ? (
-            <div className="absolute left-1/2 top-5 -translate-x-1/2 rounded-full bg-cream-50/10 px-3 py-1 text-xs text-cream-50/80 backdrop-blur">
+            <div className="absolute left-1/2 top-5 -translate-x-1/2 rounded-full bg-cream-50/15 px-3 py-1 text-xs text-cream-50/90 backdrop-blur">
               {index + 1} / {images.length}
             </div>
           ) : null}
@@ -86,7 +89,7 @@ export function Lightbox({ open, images, startIndex = 0, onClose }: Props) {
                   prev();
                 }}
                 aria-label="Sebelumnya"
-                className="absolute left-3 z-10 grid h-11 w-11 place-items-center rounded-full bg-cream-50/10 text-cream-50 backdrop-blur transition hover:bg-cream-50/20 sm:left-6"
+                className="absolute left-3 z-10 grid h-11 w-11 place-items-center rounded-full bg-cream-50/15 text-cream-50 backdrop-blur transition hover:bg-cream-50/25 sm:left-6"
               >
                 <ChevIcon className="h-4 w-4 -scale-x-100" />
               </button>
@@ -96,7 +99,7 @@ export function Lightbox({ open, images, startIndex = 0, onClose }: Props) {
                   next();
                 }}
                 aria-label="Berikutnya"
-                className="absolute right-3 z-10 grid h-11 w-11 place-items-center rounded-full bg-cream-50/10 text-cream-50 backdrop-blur transition hover:bg-cream-50/20 sm:right-6"
+                className="absolute right-3 z-10 grid h-11 w-11 place-items-center rounded-full bg-cream-50/15 text-cream-50 backdrop-blur transition hover:bg-cream-50/25 sm:right-6"
               >
                 <ChevIcon className="h-4 w-4" />
               </button>
@@ -133,6 +136,8 @@ export function Lightbox({ open, images, startIndex = 0, onClose }: Props) {
       ) : null}
     </AnimatePresence>
   );
+
+  return createPortal(content, document.body);
 }
 
 function XIcon({ className }: { className?: string }) {

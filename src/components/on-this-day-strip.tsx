@@ -29,26 +29,26 @@ export function OnThisDayStrip() {
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className="glass mb-6 overflow-hidden rounded-3xl p-5 shadow-soft sm:p-6"
     >
-      <div className="flex items-end justify-between pb-3">
-        <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-ink-400">
+      <header className="flex items-start justify-between gap-3 pb-3">
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-ink-400 sm:text-xs">
             di hari yang sama
           </div>
-          <div className="font-display text-2xl italic">
+          <h2 className="mt-0.5 font-display text-xl italic leading-tight text-ink-900 sm:text-2xl">
             {items.length === 1
-              ? "sebuah kenangan kembali."
-              : "kenangan-kenangan kembali."}
-          </div>
+              ? "Sebuah kenangan kembali."
+              : "Beberapa kenangan kembali."}
+          </h2>
         </div>
         <Link
           href="/on-this-day"
-          className="text-xs text-ink-500 hover:text-ink-900"
+          className="shrink-0 self-center whitespace-nowrap rounded-full bg-cream-50/60 px-3 py-1.5 text-xs text-ink-700 backdrop-blur transition hover:bg-cream-50/90"
         >
-          Lihat semua →
+          Lihat semua
         </Link>
-      </div>
+      </header>
 
-      <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
+      <div className="hide-scrollbar -mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
         <AnimatePresence>
           {items.slice(0, 8).map((it) => {
             const first = it.media[0];
@@ -66,7 +66,7 @@ export function OnThisDayStrip() {
               >
                 <Link
                   href={`/memory/${it.memory.id}`}
-                  className="block w-40 sm:w-44"
+                  className="block w-36 sm:w-44"
                 >
                   <div className="relative aspect-[3/4] overflow-hidden rounded-2xl placeholder frame-soft">
                     {first ? (
