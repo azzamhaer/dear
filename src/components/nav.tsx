@@ -10,11 +10,11 @@ interface NavProps {
 }
 
 const links = [
-  { href: "/", label: "Home" },
-  { href: "/albums", label: "Albums" },
-  { href: "/calendar", label: "Calendar" },
-  { href: "/notes", label: "Notes" },
-  { href: "/on-this-day", label: "Today" },
+  { href: "/", label: "Beranda" },
+  { href: "/albums", label: "Album" },
+  { href: "/calendar", label: "Kalender" },
+  { href: "/notes", label: "Catatan" },
+  { href: "/on-this-day", label: "Hari Ini" },
 ];
 
 export function Nav({ user }: NavProps) {
@@ -62,11 +62,11 @@ export function Nav({ user }: NavProps) {
           <Link
             href="/upload"
             className="inline-flex items-center gap-1.5 rounded-full bg-ink-900 px-3 py-1.5 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 sm:px-4"
-            aria-label="New memory"
+            aria-label="Kenangan baru"
           >
             <PlusIcon className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">New memory</span>
-            <span className="sm:hidden">Add</span>
+            <span className="hidden sm:inline">Kenangan baru</span>
+            <span className="sm:hidden">+</span>
           </Link>
           <button
             onClick={() => setMenuOpen((v) => !v)}
@@ -112,7 +112,7 @@ export function Nav({ user }: NavProps) {
           >
             <div className="border-b border-ink-900/5 px-3 py-2">
               <div className="text-xs uppercase tracking-wider text-ink-400">
-                signed in as
+                masuk sebagai
               </div>
               <div className="font-medium">{user.displayName}</div>
             </div>
@@ -121,13 +121,13 @@ export function Nav({ user }: NavProps) {
               onClick={() => setMenuOpen(false)}
               className="mt-1 block w-full rounded-xl px-3 py-2 text-left text-sm text-ink-700 hover:bg-ink-900/5"
             >
-              Settings
+              Pengaturan
             </Link>
             <button
               onClick={logout}
               className="block w-full rounded-xl px-3 py-2 text-left text-sm text-ink-700 hover:bg-ink-900/5"
             >
-              Sign out
+              Keluar
             </button>
           </div>
         </div>

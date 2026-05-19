@@ -42,7 +42,7 @@ export function UploadZone({ value, onChange }: Props) {
         const res = await fetch("/api/upload", { method: "POST", body: form });
         if (!res.ok) {
           const j = (await res.json().catch(() => ({}))) as { error?: string };
-          throw new Error(j.error ?? `Upload failed (${res.status})`);
+          throw new Error(j.error ?? `Gagal unggah (${res.status})`);
         }
         const j = (await res.json()) as {
           uploaded: Array<{
@@ -60,7 +60,7 @@ export function UploadZone({ value, onChange }: Props) {
         onChange([...value, ...newItems]);
       } catch (e) {
         setError(
-          e instanceof Error ? e.message : "Something went wrong uploading.",
+          e instanceof Error ? e.message : "Ada yang tidak beres saat unggah.",
         );
         for (const p of previews) URL.revokeObjectURL(p.url);
       } finally {
@@ -110,10 +110,10 @@ export function UploadZone({ value, onChange }: Props) {
           <UploadIcon className="h-5 w-5 text-ink-400" />
         </div>
         <div className="font-display text-lg text-ink-700">
-          Drop photos or videos here
+          Letakkan foto atau video di sini
         </div>
         <div className="mt-1 text-sm text-ink-400">
-          or tap to choose from your library
+          atau ketuk untuk memilih dari galeri
         </div>
       </label>
 
@@ -131,7 +131,7 @@ export function UploadZone({ value, onChange }: Props) {
             exit={{ opacity: 0 }}
             className="rounded-2xl bg-cream-100/60 px-4 py-3 text-sm text-ink-500"
           >
-            Uploading…
+            Mengunggah…
           </motion.div>
         )}
       </AnimatePresence>

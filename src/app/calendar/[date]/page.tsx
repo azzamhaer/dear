@@ -41,22 +41,23 @@ export default async function CalendarDayPage({
   return (
     <>
       <PageHeader
-        eyebrow="that day"
+        eyebrow="hari itu"
         title={formatLongDate(dateObj)}
         right={
           <Link
             href="/calendar"
             className="rounded-full px-3 py-1.5 text-sm text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
           >
-            ← Calendar
+            ← Kalender
           </Link>
         }
       />
       <MemoryFeed
         initial={items}
         currentUserId={user?.id}
-        emptyTitle="Nothing kept for this day."
-        emptyDescription="There's still time."
+        paginate={false}
+        emptyTitle="Belum ada apa-apa untuk hari ini."
+        emptyDescription="Masih ada waktu untuk membuatnya."
       />
     </>
   );

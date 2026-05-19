@@ -7,20 +7,23 @@ import { OnThisDayStrip } from "@/components/on-this-day-strip";
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
+const PAGE_SIZE = 10;
+
 export default async function HomePage() {
   const [user, memories] = await Promise.all([
     getCurrentUser(),
-    listMemories({ limit: 30 }),
+    listMemories({ limit: PAGE_SIZE }),
   ]);
 
   const greeting = pickGreeting();
+  const firstName = user?.displayName.split(" ")[0] ?? "sayang";
 
   return (
     <>
       <PageHeader
         eyebrow={greeting}
-        title={user ? `Hi, ${user.displayName.split(" ")[0]}.` : "Hi."}
-        subtitle="Everything you two have saved, in one quiet feed."
+        title={`Hai, ${firstName}.`}
+        subtitle="Semua yang pernah kita simpan, di satu tempat sunyi ini."
       />
 
       <OnThisDayStrip />
@@ -28,20 +31,20 @@ export default async function HomePage() {
       <MemoryFeed
         initial={memories}
         currentUserId={user?.id}
-        emptyTitle="Your first memory awaits."
-        emptyDescription="Upload a photo or a little video — write a few words. That's all it takes."
-        emptyCta={{ href: "/upload", label: "Add a memory" }}
+        pageSize={PAGE_SIZE}
+        emptyTitle="Mulai dari sini."
+        emptyDescription="Unggah satu foto, atau sedikit video — tulis beberapa kata. Sesederhana itu."
+        emptyCta={{ href: "/upload", label: "Simpan yang pertama" }}
       />
     </>
   );
 }
 
 function pickGreeting(): string {
-  // WIB hour-of-day
   const h = new Date(Date.now() + 7 * 3600 * 1000).getUTCHours();
-  if (h < 5) return "still up";
-  if (h < 11) return "good morning";
-  if (h < 17) return "good afternoon";
-  if (h < 21) return "good evening";
-  return "good night";
+  if (h < 5) return "masih bangun?";
+  if (h < 11) return "selamat pagi";
+  if (h < 15) return "selamat siang";
+  if (h < 19) return "selamat sore";
+  return "selamat malam";
 }

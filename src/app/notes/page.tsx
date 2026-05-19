@@ -21,22 +21,21 @@ export default async function NotesPage() {
     return (
       <>
         <PageHeader
-          eyebrow="our notebook"
-          title="Notes."
-          subtitle="A quiet place to write down anything together — letters, lists, plans, half-thoughts."
+          eyebrow="buku kita"
+          title="Catatan."
+          subtitle="Tempat menulis apa pun bersama — surat, daftar, rencana, lintasan pikiran."
           right={<NewNoteButton />}
         />
         <EmptyState
-          title="Nothing written yet."
-          description="Start the first one. A little message to each other for later."
+          title="Belum ada yang ditulis."
+          description="Tulis yang pertama. Sepotong pesan kecil untuk dibaca nanti."
           icon="📝"
-          cta={{ href: "/notes/new", label: "Write a note" }}
+          cta={{ href: "/notes/new", label: "Tulis sesuatu" }}
         />
       </>
     );
   }
 
-  const authorIds = Array.from(new Set(rows.map((n) => n.authorId)));
   const authorRows = await d
     .select({ id: users.id, displayName: users.displayName })
     .from(users);
@@ -45,9 +44,9 @@ export default async function NotesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="our notebook"
-        title="Notes."
-        subtitle="A quiet place to write down anything together — letters, lists, plans, half-thoughts."
+        eyebrow="buku kita"
+        title="Catatan."
+        subtitle="Tempat menulis apa pun bersama — surat, daftar, rencana, lintasan pikiran."
         right={<NewNoteButton />}
       />
 
@@ -67,17 +66,19 @@ export default async function NotesPage() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="font-display text-lg italic leading-snug text-ink-900">
-                    {n.title || <span className="text-ink-400">Untitled</span>}
+                    {n.title || (
+                      <span className="text-ink-400">Tanpa judul</span>
+                    )}
                   </div>
                   {n.pinned ? (
                     <span className="rounded-full bg-rose-mist/70 px-2 py-0.5 text-[10px] uppercase tracking-wider text-ink-700">
-                      pinned
+                      ditempel
                     </span>
                   ) : null}
                 </div>
                 <p className="mt-2 line-clamp-4 whitespace-pre-wrap font-serif text-[15px] leading-relaxed text-ink-700">
                   {preview || (
-                    <span className="text-ink-400">No content yet.</span>
+                    <span className="text-ink-400">Masih kosong.</span>
                   )}
                 </p>
                 <div className="mt-4 flex items-baseline justify-between text-xs text-ink-400">

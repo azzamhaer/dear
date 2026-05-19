@@ -25,14 +25,14 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(
           j.error === "invalid_credentials"
-            ? "That doesn't match what we have."
-            : "Couldn't sign you in. Try again?",
+            ? "Sepertinya bukan ini."
+            : "Belum bisa membuka pintu. Coba lagi?",
         );
       }
       router.push(redirectTo || "/");
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setError(e instanceof Error ? e.message : "Ada yang tidak beres.");
     } finally {
       setSubmitting(false);
     }
@@ -42,7 +42,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
         <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
-          Name
+          Nama
         </label>
         <input
           type="text"
@@ -50,13 +50,13 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 text-base outline-none transition focus:border-rose-dusty/40"
-          placeholder="who are you?"
+          placeholder="siapa di sana?"
           required
         />
       </div>
       <div>
         <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
-          Password
+          Kata sandi
         </label>
         <input
           type="password"
@@ -80,7 +80,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         disabled={submitting}
         className="mt-2 w-full rounded-2xl bg-ink-900 px-4 py-3 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-60"
       >
-        {submitting ? "Opening the door…" : "Come in"}
+        {submitting ? "Membuka pintu…" : "Masuk"}
       </button>
     </form>
   );

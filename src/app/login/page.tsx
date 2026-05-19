@@ -27,7 +27,7 @@ export default async function LoginPage({
           <div className="mb-3 font-display text-5xl italic text-ink-900">
             Dear<span className="text-rose-dusty">.</span>
           </div>
-          <p className="text-sm text-ink-500">A quiet place for the two of us.</p>
+          <p className="text-sm text-ink-500">Tempat tenang untuk berdua.</p>
         </div>
 
         <div className="glass w-full rounded-3xl p-6 shadow-soft sm:p-8">
@@ -35,7 +35,7 @@ export default async function LoginPage({
         </div>
 
         <p className="mt-8 text-center text-xs text-ink-400">
-          private · just us
+          privat · hanya kita
         </p>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { and, desc, eq, gte, inArray, lte, sql, type SQL } from "drizzle-orm";
 import { db } from "./cloudflare";
 import {
   albums,
+  comments,
   media,
   memories,
   reactions,
@@ -15,10 +16,16 @@ import {
 
 export interface MemoryWithRelations {
   memory: Memory;
-  author: { id: string; displayName: string; username: string };
+  author: {
+    id: string;
+    displayName: string;
+    username: string;
+    avatarUrl: string | null;
+  };
   media: Media[];
   reactions: Reaction[];
   album: Pick<Album, "id" | "name" | "slug"> | null;
+  commentCount: number;
 }
 
 /**
@@ -92,20 +99,36 @@ async function hydrateMemories(
     new Set(rows.map((m) => m.albumId).filter((x): x is string => !!x)),
   );
 
-  const [mediaRows, reactRows, authorRows, albumRows] = await Promise.all([
-    ids.length
-      ? d.select().from(media).where(inArray(media.memoryId, ids))
-      : Promise.resolve([] as Media[]),
-    ids.length
-      ? d.select().from(reactions).where(inArray(reactions.memoryId, ids))
-      : Promise.resolve([] as Reaction[]),
-    authorIds.length
-      ? d.select().from(users).where(inArray(users.id, authorIds))
-      : Promise.resolve([] as User[]),
-    albumIds.length
-      ? d.select().from(albums).where(inArray(albums.id, albumIds))
-      : Promise.resolve([] as Album[]),
-  ]);
+  const [mediaRows, reactRows, authorRows, albumRows, commentCountRows] =
+    await Promise.all([
+      ids.length
+        ? d.select().from(media).where(inArray(media.memoryId, ids))
+        : Promise.resolve([] as Media[]),
+      ids.length
+        ? d.select().from(reactions).where(inArray(reactions.memoryId, ids))
+        : Promise.resolve([] as Reaction[]),
+      authorIds.length
+        ? d.select().from(users).where(inArray(users.id, authorIds))
+        : Promise.resolve([] as User[]),
+      albumIds.length
+        ? d.select().from(albums).where(inArray(albums.id, albumIds))
+        : Promise.resolve([] as Album[]),
+      ids.length
+        ? d
+            .select({
+              memoryId: comments.memoryId,
+              count: sql<number>`count(*)`.as("count"),
+            })
+            .from(comments)
+            .where(inArray(comments.memoryId, ids))
+            .groupBy(comments.memoryId)
+        : Promise.resolve([] as Array<{ memoryId: string; count: number }>),
+    ]);
+
+  const commentCountByMemory = new Map<string, number>();
+  for (const r of commentCountRows) {
+    commentCountByMemory.set(r.memoryId, Number(r.count));
+  }
 
   const mediaByMemory = new Map<string, Media[]>();
   for (const m of mediaRows) {
@@ -134,11 +157,22 @@ async function hydrateMemories(
     memory: m,
     media: mediaByMemory.get(m.id) ?? [],
     reactions: reactsByMemory.get(m.id) ?? [],
+    commentCount: commentCountByMemory.get(m.id) ?? 0,
     author: (() => {
       const a = authorsById.get(m.authorId);
       return a
-        ? { id: a.id, displayName: a.displayName, username: a.username }
-        : { id: m.authorId, displayName: "—", username: "—" };
+        ? {
+            id: a.id,
+            displayName: a.displayName,
+            username: a.username,
+            avatarUrl: a.avatarUrl ?? null,
+          }
+        : {
+            id: m.authorId,
+            displayName: "—",
+            username: "—",
+            avatarUrl: null,
+          };
     })(),
     album: m.albumId
       ? (() => {

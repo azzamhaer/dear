@@ -32,8 +32,8 @@ export default async function NotePage({
   return (
     <>
       <PageHeader
-        eyebrow={`by ${author?.displayName ?? "—"} · ${formatRelative(updated)}`}
-        title="Note."
+        eyebrow={`oleh ${author?.displayName ?? "—"} · ${formatRelative(updated)}`}
+        title="Catatan."
       />
       <NoteEditor
         initial={{

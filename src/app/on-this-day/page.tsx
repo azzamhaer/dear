@@ -31,15 +31,16 @@ export default async function OnThisDayPage() {
   return (
     <>
       <PageHeader
-        eyebrow="on this day"
-        title="What today used to be."
-        subtitle="Memories from past years on this exact date."
+        eyebrow="di hari yang sama"
+        title="Hari ini, di waktu yang lain."
+        subtitle="Kenangan dari tahun-tahun lalu di tanggal yang sama."
       />
       <MemoryFeed
         initial={items}
         currentUserId={user?.id}
-        emptyTitle="No echoes for today."
-        emptyDescription="Come back next year — there will be something here."
+        paginate={false}
+        emptyTitle="Belum ada gema dari masa lalu."
+        emptyDescription="Kembali tahun depan — pasti ada sesuatu yang menunggu."
       />
     </>
   );

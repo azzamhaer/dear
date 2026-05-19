@@ -4,17 +4,17 @@ import { PageHeader } from "@/components/page-header";
 export const runtime = "edge";
 
 export default function CalendarPage() {
-  const now = new Date();
+  const wibNow = new Date(Date.now() + 7 * 3600 * 1000);
   return (
     <>
       <PageHeader
-        eyebrow="calendar"
-        title="Every day we've kept."
-        subtitle="Pick a date to revisit it."
+        eyebrow="kalender"
+        title="Hari demi hari yang kita simpan."
+        subtitle="Pilih tanggal untuk kembali ke sana."
       />
       <CalendarView
-        initialYear={now.getUTCFullYear()}
-        initialMonth={now.getUTCMonth() + 1}
+        initialYear={wibNow.getUTCFullYear()}
+        initialMonth={wibNow.getUTCMonth() + 1}
       />
     </>
   );

@@ -6,7 +6,7 @@ export const runtime = "edge";
 export default function NewNotePage() {
   return (
     <>
-      <PageHeader eyebrow="new" title="A new note." />
+      <PageHeader eyebrow="baru" title="Catatan baru." />
       <NoteEditor />
     </>
   );

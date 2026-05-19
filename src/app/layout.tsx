@@ -26,8 +26,11 @@ const display = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Dear — our memories",
-  description: "A quiet place for the two of us.",
+  title: "Dear — kenangan kita",
+  description: "Tempat tenang untuk berdua.",
+  icons: {
+    icon: "/favicon.svg",
+  },
   appleWebApp: {
     title: "Dear",
     statusBarStyle: "black-translucent",

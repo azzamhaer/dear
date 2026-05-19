@@ -35,25 +35,24 @@ function ProfileForm({ user }: { user: UserShape }) {
       const form = new FormData();
       form.append("files", file);
       const up = await fetch("/api/upload", { method: "POST", body: form });
-      if (!up.ok) throw new Error("Upload failed");
+      if (!up.ok) throw new Error("Foto belum bisa diunggah.");
       const j = (await up.json()) as {
         uploaded: Array<{ r2Key: string }>;
       };
       const key = j.uploaded[0]?.r2Key;
-      if (!key) throw new Error("No key returned");
+      if (!key) throw new Error("Foto tidak terbaca.");
       const url = `/api/media/${encodeURI(key)}`;
-      // Patch profile right away so it sticks
       const res = await fetch("/api/auth/profile", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ avatarKey: key }),
       });
-      if (!res.ok) throw new Error("Profile update failed");
+      if (!res.ok) throw new Error("Foto profil belum bisa diganti.");
       setAvatarUrl(url);
-      setStatus("Photo updated.");
+      setStatus("Foto diganti.");
       router.refresh();
     } catch (e) {
-      setStatus(e instanceof Error ? e.message : "Something went wrong");
+      setStatus(e instanceof Error ? e.message : "Ada yang tidak beres.");
     } finally {
       setUploading(false);
     }
@@ -70,12 +69,12 @@ function ProfileForm({ user }: { user: UserShape }) {
       });
       if (!res.ok) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(j.error ?? "Update failed");
+        throw new Error(j.error ?? "Belum bisa diganti.");
       }
-      setStatus("Name updated.");
+      setStatus("Nama diganti.");
       router.refresh();
     } catch (e) {
-      setStatus(e instanceof Error ? e.message : "Something went wrong");
+      setStatus(e instanceof Error ? e.message : "Ada yang tidak beres.");
     } finally {
       setSaving(false);
     }
@@ -83,7 +82,7 @@ function ProfileForm({ user }: { user: UserShape }) {
 
   return (
     <section className="glass space-y-5 rounded-3xl p-5 shadow-soft sm:p-6">
-      <h2 className="font-display text-xl italic">Profile</h2>
+      <h2 className="font-display text-xl italic">Profil</h2>
 
       <div className="flex items-center gap-4">
         <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-rose-blush to-rose-dusty text-2xl font-semibold text-cream-50 shadow-soft">
@@ -114,14 +113,14 @@ function ProfileForm({ user }: { user: UserShape }) {
             disabled={uploading}
             className="rounded-full bg-ink-900 px-4 py-2 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-60"
           >
-            {uploading ? "Uploading…" : "Change photo"}
+            {uploading ? "Mengunggah…" : "Ganti foto"}
           </button>
         </div>
       </div>
 
       <div>
         <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
-          Display name
+          Nama tampilan
         </label>
         <input
           type="text"
@@ -133,7 +132,7 @@ function ProfileForm({ user }: { user: UserShape }) {
 
       <div>
         <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
-          Username (for login)
+          Username (untuk masuk)
         </label>
         <input
           type="text"
@@ -142,7 +141,7 @@ function ProfileForm({ user }: { user: UserShape }) {
           className="w-full cursor-not-allowed rounded-2xl border border-ink-900/10 bg-cream-100/60 px-4 py-3 text-ink-500 outline-none"
         />
         <p className="mt-1 text-xs text-ink-400">
-          Username can't be changed once set.
+          Username tidak bisa diubah setelah dibuat.
         </p>
       </div>
 
@@ -155,10 +154,12 @@ function ProfileForm({ user }: { user: UserShape }) {
       <div className="flex justify-end">
         <button
           onClick={saveName}
-          disabled={saving || displayName === user.displayName || !displayName.trim()}
+          disabled={
+            saving || displayName === user.displayName || !displayName.trim()
+          }
           className="rounded-full bg-ink-900 px-5 py-2.5 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-60"
         >
-          {saving ? "Saving…" : "Save profile"}
+          {saving ? "Menyimpan…" : "Simpan profil"}
         </button>
       </div>
     </section>
@@ -177,11 +178,14 @@ function PasswordForm() {
 
   async function save() {
     if (newPassword !== confirm) {
-      setStatus({ kind: "err", msg: "Passwords don't match." });
+      setStatus({ kind: "err", msg: "Kata sandi tidak cocok." });
       return;
     }
     if (newPassword.length < 8) {
-      setStatus({ kind: "err", msg: "New password is too short (min 8)." });
+      setStatus({
+        kind: "err",
+        msg: "Kata sandi terlalu pendek (minimal 8 karakter).",
+      });
       return;
     }
     setSaving(true);
@@ -196,20 +200,20 @@ function PasswordForm() {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(
           j.error === "wrong_password"
-            ? "Current password is wrong."
+            ? "Kata sandi sekarang salah."
             : j.error === "too_short"
-              ? "New password is too short (min 8)."
-              : "Couldn't change password.",
+              ? "Kata sandi terlalu pendek (minimal 8 karakter)."
+              : "Belum bisa mengganti kata sandi.",
         );
       }
-      setStatus({ kind: "ok", msg: "Password changed." });
+      setStatus({ kind: "ok", msg: "Kata sandi diganti." });
       setCurrent("");
       setNewPass("");
       setConfirm("");
     } catch (e) {
       setStatus({
         kind: "err",
-        msg: e instanceof Error ? e.message : "Something went wrong.",
+        msg: e instanceof Error ? e.message : "Ada yang tidak beres.",
       });
     } finally {
       setSaving(false);
@@ -218,11 +222,11 @@ function PasswordForm() {
 
   return (
     <section className="glass space-y-5 rounded-3xl p-5 shadow-soft sm:p-6">
-      <h2 className="font-display text-xl italic">Password</h2>
+      <h2 className="font-display text-xl italic">Kata sandi</h2>
 
       <div>
         <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
-          Current password
+          Kata sandi sekarang
         </label>
         <input
           type="password"
@@ -235,7 +239,7 @@ function PasswordForm() {
 
       <div>
         <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
-          New password
+          Kata sandi baru
         </label>
         <input
           type="password"
@@ -248,7 +252,7 @@ function PasswordForm() {
 
       <div>
         <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
-          Confirm new password
+          Konfirmasi kata sandi baru
         </label>
         <input
           type="password"
@@ -274,15 +278,10 @@ function PasswordForm() {
       <div className="flex justify-end">
         <button
           onClick={save}
-          disabled={
-            saving ||
-            !currentPassword ||
-            !newPassword ||
-            !confirm
-          }
+          disabled={saving || !currentPassword || !newPassword || !confirm}
           className="rounded-full bg-ink-900 px-5 py-2.5 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-60"
         >
-          {saving ? "Saving…" : "Change password"}
+          {saving ? "Menyimpan…" : "Ganti kata sandi"}
         </button>
       </div>
     </section>

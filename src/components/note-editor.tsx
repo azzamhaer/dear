@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ConfirmDialog } from "./confirm-dialog";
 
 interface Note {
   id?: string;
@@ -19,12 +20,11 @@ export function NoteEditor({ initial }: { initial?: Note }) {
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">(
     "idle",
   );
-  const [deleting, setDeleting] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const saveTimer = useRef<number | null>(null);
   const lastSaved = useRef(JSON.stringify(initial ?? {}));
 
-  // Auto-save (debounced) when editing an existing note
   const persist = useCallback(async () => {
     if (!note.id) return;
     const snapshot = JSON.stringify(note);
@@ -94,14 +94,14 @@ export function NoteEditor({ initial }: { initial?: Note }) {
           <input
             value={note.title}
             onChange={(e) => setNote({ ...note, title: e.target.value })}
-            placeholder="Title"
+            placeholder="Judul"
             className="w-full bg-transparent font-display text-2xl italic text-ink-900 outline-none placeholder:text-ink-400/60"
           />
         </div>
         <textarea
           value={note.body}
           onChange={(e) => setNote({ ...note, body: e.target.value })}
-          placeholder="Pour it out here…"
+          placeholder="Tuangkan di sini, sebebas yang kamu mau…"
           rows={18}
           className="w-full resize-none bg-transparent px-5 py-5 font-serif text-[17px] leading-relaxed text-ink-700 outline-none placeholder:text-ink-400/60 sm:px-6"
         />
@@ -120,18 +120,18 @@ export function NoteEditor({ initial }: { initial?: Note }) {
                   }
                   className="h-4 w-4 accent-rose-dusty"
                 />
-                <span>Pin to top</span>
+                <span>Tempel di atas</span>
               </label>
               <span className="text-xs text-ink-400">
                 {saveState === "saving"
-                  ? "Saving…"
+                  ? "Menyimpan…"
                   : saveState === "saved"
-                    ? "Saved"
+                    ? "Tersimpan"
                     : ""}
               </span>
             </>
           ) : (
-            <span className="text-xs text-ink-400">Draft</span>
+            <span className="text-xs text-ink-400">Belum tersimpan</span>
           )}
         </div>
 
@@ -140,7 +140,7 @@ export function NoteEditor({ initial }: { initial?: Note }) {
             href="/notes"
             className="rounded-full px-4 py-2 text-sm text-ink-500 hover:text-ink-900"
           >
-            ← Back
+            ← Kembali
           </Link>
           {isNew ? (
             <button
@@ -148,23 +148,29 @@ export function NoteEditor({ initial }: { initial?: Note }) {
               disabled={!note.title.trim() && !note.body.trim()}
               className="rounded-full bg-ink-900 px-5 py-2 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-60"
             >
-              Save note
+              Simpan catatan
             </button>
           ) : (
             <button
-              onClick={confirmDel ? remove : () => setConfirmDel(true)}
+              onClick={() => setConfirmDel(true)}
               disabled={deleting}
               className="rounded-full bg-rose-mist/40 px-4 py-2 text-sm text-rose-dustier hover:bg-rose-mist disabled:opacity-60"
             >
-              {deleting
-                ? "Deleting…"
-                : confirmDel
-                  ? "Tap again to delete"
-                  : "Delete"}
+              Hapus
             </button>
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDel}
+        title="Hapus catatan ini?"
+        description="Yang tertulis di sini akan ikut hilang."
+        confirmLabel="Hapus"
+        busy={deleting}
+        onConfirm={remove}
+        onCancel={() => setConfirmDel(false)}
+      />
     </div>
   );
 }

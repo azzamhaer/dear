@@ -5,10 +5,10 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
-const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
+const WEEKDAYS = ["M", "S", "S", "R", "K", "J", "S"];
 
 export function CalendarView({
   initialYear,
@@ -32,6 +32,12 @@ export function CalendarView({
 
   const days = useMemo(() => buildMonth(year, month), [year, month]);
 
+  // Today in WIB
+  const todayYmd = useMemo(() => {
+    const wib = new Date(Date.now() + 7 * 3600 * 1000);
+    return `${wib.getUTCFullYear()}-${String(wib.getUTCMonth() + 1).padStart(2, "0")}-${String(wib.getUTCDate()).padStart(2, "0")}`;
+  }, []);
+
   function shift(by: number) {
     const next = new Date(Date.UTC(year, month - 1 + by, 1));
     setYear(next.getUTCFullYear());
@@ -44,7 +50,7 @@ export function CalendarView({
         <button
           onClick={() => shift(-1)}
           className="rounded-full p-2 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
-          aria-label="Previous month"
+          aria-label="Bulan sebelumnya"
         >
           <ChevIcon className="h-4 w-4 -scale-x-100" />
         </button>
@@ -57,7 +63,7 @@ export function CalendarView({
         <button
           onClick={() => shift(1)}
           className="rounded-full p-2 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
-          aria-label="Next month"
+          aria-label="Bulan berikutnya"
         >
           <ChevIcon className="h-4 w-4" />
         </button>
@@ -74,18 +80,18 @@ export function CalendarView({
           if (!d) return <div key={i} className="aspect-square" />;
           const ymd = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
           const count = counts[ymd] ?? 0;
-          const isToday =
-            new Date().toISOString().slice(0, 10) === ymd;
-          const tone =
-            count >= 4
-              ? "bg-rose-dusty text-cream-50"
-              : count === 3
-              ? "bg-rose-dustier/80 text-cream-50"
-              : count === 2
-              ? "bg-rose-blush text-ink-900"
-              : count === 1
-              ? "bg-rose-mist text-ink-900"
-              : "bg-transparent text-ink-700";
+          const isToday = todayYmd === ymd;
+          const intensity =
+            count >= 6 ? 5 : count >= 4 ? 4 : count >= 2 ? 3 : count === 1 ? 2 : 1;
+
+          const bgByIntensity: Record<number, string> = {
+            1: "bg-transparent text-ink-700",
+            2: "bg-rose-mist/70 text-ink-900",
+            3: "bg-rose-blush text-ink-900",
+            4: "bg-rose-dustier text-cream-50 shadow-soft",
+            5: "bg-rose-dusty text-cream-50 shadow-glow",
+          };
+
           return (
             <motion.div
               key={i}
@@ -96,12 +102,25 @@ export function CalendarView({
             >
               <Link
                 href={`/calendar/${ymd}`}
-                className={`grid h-full w-full place-items-center rounded-xl text-sm transition hover:scale-[1.03] ${tone} ${
-                  isToday ? "ring-2 ring-ink-900/30" : ""
+                className={`relative grid h-full w-full place-items-center rounded-xl text-sm transition hover:scale-[1.03] ${bgByIntensity[intensity]} ${
+                  isToday ? "ring-2 ring-ink-900/40" : ""
                 }`}
-                title={count ? `${count} memor${count === 1 ? "y" : "ies"}` : ""}
+                title={
+                  count
+                    ? `${count} kenangan di tanggal ${d}`
+                    : `tanggal ${d}`
+                }
               >
-                {d}
+                <span className="font-medium">{d}</span>
+                {count > 0 ? (
+                  <span
+                    className={`absolute -bottom-0.5 right-1 text-[9px] font-semibold tabular-nums ${
+                      intensity >= 4 ? "text-cream-50/90" : "text-ink-700/70"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                ) : null}
               </Link>
             </motion.div>
           );
@@ -109,7 +128,7 @@ export function CalendarView({
       </div>
 
       <p className="mt-4 text-center text-xs text-ink-400">
-        Darker days hold more memories.
+        Hari yang lebih pekat menyimpan lebih banyak kenangan.
       </p>
     </div>
   );
@@ -117,7 +136,7 @@ export function CalendarView({
 
 function buildMonth(year: number, month: number): (number | null)[] {
   const first = new Date(Date.UTC(year, month - 1, 1));
-  const startDow = first.getUTCDay(); // 0 = Sun
+  const startDow = first.getUTCDay();
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const cells: (number | null)[] = [];
   for (let i = 0; i < startDow; i++) cells.push(null);

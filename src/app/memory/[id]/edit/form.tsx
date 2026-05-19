@@ -42,11 +42,11 @@ export function EditForm({
           albumId: v.albumId || null,
         }),
       });
-      if (!res.ok) throw new Error("Couldn't save");
+      if (!res.ok) throw new Error("Belum bisa disimpan.");
       router.push(`/memory/${memoryId}`);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setError(e instanceof Error ? e.message : "Ada yang tidak beres.");
     } finally {
       setSaving(false);
     }
@@ -57,7 +57,7 @@ export function EditForm({
       <section className="glass space-y-5 rounded-3xl p-5 shadow-soft sm:p-6">
         <div>
           <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
-            A few words
+            Cerita kecil
           </label>
           <textarea
             value={v.caption}
@@ -67,7 +67,7 @@ export function EditForm({
           />
         </div>
 
-        <Field label="When (WIB)">
+        <Field label="Kapan (WIB)">
           <input
             type="datetime-local"
             value={v.memoryDateLocal}
@@ -76,7 +76,7 @@ export function EditForm({
           />
         </Field>
 
-        <Field label="Place">
+        <Field label="Tempat">
           <input
             type="text"
             value={v.location}
@@ -85,7 +85,7 @@ export function EditForm({
           />
         </Field>
 
-        <Field label="Mood">
+        <Field label="Suasana hati">
           <MoodPicker value={v.mood} onChange={(mood) => setV({ ...v, mood })} />
         </Field>
 
@@ -96,7 +96,7 @@ export function EditForm({
               onChange={(e) => setV({ ...v, albumId: e.target.value })}
               className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
             >
-              <option value="">— none —</option>
+              <option value="">— belum dimasukkan —</option>
               {albums.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.name}
@@ -119,7 +119,7 @@ export function EditForm({
           onClick={() => router.back()}
           className="rounded-full px-5 py-2.5 text-sm text-ink-500 hover:text-ink-900"
         >
-          Cancel
+          Batal
         </button>
         <button
           type="button"
@@ -127,7 +127,7 @@ export function EditForm({
           disabled={saving}
           className="rounded-full bg-ink-900 px-6 py-2.5 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-60"
         >
-          {saving ? "Saving…" : "Save changes"}
+          {saving ? "Menyimpan…" : "Simpan perubahan"}
         </button>
       </div>
     </div>

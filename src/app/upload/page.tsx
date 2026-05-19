@@ -20,9 +20,9 @@ export default async function UploadPage() {
   return (
     <>
       <PageHeader
-        eyebrow="new"
-        title="A memory."
-        subtitle="A photo, a little video, a few quiet words."
+        eyebrow="baru"
+        title="Satu kenangan."
+        subtitle="Sebuah foto, sepotong video, beberapa kata."
       />
       <UploadForm albums={allAlbums} />
     </>

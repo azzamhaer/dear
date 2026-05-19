@@ -32,17 +32,19 @@ export function OnThisDayStrip() {
       <div className="flex items-end justify-between pb-3">
         <div>
           <div className="text-xs uppercase tracking-[0.18em] text-ink-400">
-            on this day
+            di hari yang sama
           </div>
           <div className="font-display text-2xl italic">
-            {items.length === 1 ? "a memory returns." : "memories return."}
+            {items.length === 1
+              ? "sebuah kenangan kembali."
+              : "kenangan-kenangan kembali."}
           </div>
         </div>
         <Link
           href="/on-this-day"
           className="text-xs text-ink-500 hover:text-ink-900"
         >
-          See all →
+          Lihat semua →
         </Link>
       </div>
 

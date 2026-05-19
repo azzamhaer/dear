@@ -24,7 +24,7 @@ export function UploadForm({ albums }: Props) {
 
   async function save() {
     if (media.length === 0 && !caption.trim()) {
-      setError("Add a photo, a video, or at least a few words.");
+      setError("Tambahkan foto, video, atau setidaknya beberapa kata.");
       return;
     }
     setSaving(true);
@@ -51,12 +51,12 @@ export function UploadForm({ albums }: Props) {
           })),
         }),
       });
-      if (!res.ok) throw new Error("Couldn't save");
+      if (!res.ok) throw new Error("Belum bisa disimpan.");
       const j = (await res.json()) as { id: string };
       router.push(`/memory/${j.id}`);
       router.refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong.");
+      setError(e instanceof Error ? e.message : "Ada yang tidak beres.");
     } finally {
       setSaving(false);
     }
@@ -71,20 +71,20 @@ export function UploadForm({ albums }: Props) {
       <section className="glass space-y-5 rounded-3xl p-5 shadow-soft sm:p-6">
         <div>
           <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
-            A few words
+            Cerita kecil
           </label>
           <textarea
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             rows={4}
-            placeholder="What do you want to remember about this?"
+            placeholder="Apa yang ingin kamu kenang dari momen ini?"
             className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 font-serif text-[17px] leading-relaxed outline-none transition focus:border-rose-dusty/40"
           />
         </div>
 
         <div>
           <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
-            When
+            Kapan
           </label>
           <label className="mb-2 flex cursor-pointer select-none items-center gap-2.5 rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3">
             <input
@@ -94,9 +94,9 @@ export function UploadForm({ albums }: Props) {
               className="h-4 w-4 accent-rose-dusty"
             />
             <span className="text-sm">
-              Use current time (WIB){" "}
+              Pakai waktu sekarang (WIB){" "}
               {useNow ? (
-                <span className="text-ink-400">— right now</span>
+                <span className="text-ink-400">— saat ini juga</span>
               ) : null}
             </span>
           </label>
@@ -110,28 +110,28 @@ export function UploadForm({ albums }: Props) {
           ) : null}
         </div>
 
-        <Field label="Place (optional)">
+        <Field label="Tempat (opsional)">
           <input
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="The kitchen, Kyoto, the long drive…"
+            placeholder="Di dapur, di Kyoto, di perjalanan panjang…"
             className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
           />
         </Field>
 
-        <Field label="Mood (optional)">
+        <Field label="Suasana hati (opsional)">
           <MoodPicker value={mood} onChange={setMood} />
         </Field>
 
         {albums.length > 0 ? (
-          <Field label="Album (optional)">
+          <Field label="Album (opsional)">
             <select
               value={albumId}
               onChange={(e) => setAlbumId(e.target.value)}
               className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
             >
-              <option value="">— none —</option>
+              <option value="">— belum dimasukkan —</option>
               {albums.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.name}
@@ -154,7 +154,7 @@ export function UploadForm({ albums }: Props) {
           onClick={() => router.back()}
           className="rounded-full px-5 py-2.5 text-sm text-ink-500 hover:text-ink-900"
         >
-          Cancel
+          Batal
         </button>
         <button
           type="button"
@@ -162,7 +162,7 @@ export function UploadForm({ albums }: Props) {
           disabled={saving}
           className="rounded-full bg-ink-900 px-6 py-2.5 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-60"
         >
-          {saving ? "Saving…" : "Save memory"}
+          {saving ? "Menyimpan…" : "Simpan kenangan"}
         </button>
       </div>
     </div>

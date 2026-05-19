@@ -28,12 +28,12 @@ export function fromUnixSeconds(s: number): Date {
 }
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
 
 export function formatLongDate(d: Date): string {
-  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 export function formatRelative(d: Date): string {
@@ -43,22 +43,22 @@ export function formatRelative(d: Date): string {
   const minutes = Math.round(seconds / 60);
   const hours = Math.round(minutes / 60);
   const days = Math.round(hours / 24);
-  if (seconds < 60) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
+  if (seconds < 60) return "baru saja";
+  if (minutes < 60) return `${minutes}m lalu`;
+  if (hours < 24) return `${hours}j lalu`;
+  if (days < 7) return `${days}h lalu`;
   return formatLongDate(d);
 }
 
 export const MOODS = [
-  { id: "love",        emoji: "💗", label: "in love" },
-  { id: "happy",       emoji: "🌞", label: "happy" },
-  { id: "calm",        emoji: "🌿", label: "calm" },
-  { id: "nostalgic",   emoji: "🍂", label: "nostalgic" },
-  { id: "bittersweet", emoji: "🌙", label: "bittersweet" },
-  { id: "grateful",    emoji: "✨", label: "grateful" },
-  { id: "silly",       emoji: "🎈", label: "silly" },
-  { id: "cozy",        emoji: "🍵", label: "cozy" },
+  { id: "love",        emoji: "💗", label: "jatuh cinta" },
+  { id: "happy",       emoji: "🌞", label: "bahagia" },
+  { id: "calm",        emoji: "🌿", label: "tenang" },
+  { id: "nostalgic",   emoji: "🍂", label: "rindu" },
+  { id: "bittersweet", emoji: "🌙", label: "haru" },
+  { id: "grateful",    emoji: "✨", label: "bersyukur" },
+  { id: "silly",       emoji: "🎈", label: "konyol" },
+  { id: "cozy",        emoji: "🍵", label: "hangat" },
 ] as const;
 
 export type MoodId = (typeof MOODS)[number]["id"];

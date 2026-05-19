@@ -13,7 +13,6 @@ export const dynamic = "force-dynamic";
 export default async function AlbumsPage() {
   const d = db();
 
-  // 1. Fetch all albums.
   const allAlbums = await d
     .select()
     .from(albums)
@@ -23,14 +22,14 @@ export default async function AlbumsPage() {
     return (
       <>
         <PageHeader
-          eyebrow="collections"
-          title="Albums."
-          subtitle="Group memories that belong together."
+          eyebrow="koleksi"
+          title="Album."
+          subtitle="Kelompokkan kenangan yang sejalan rasanya."
           right={<NewAlbumButton />}
         />
         <EmptyState
-          title="No albums yet."
-          description="Albums help you keep weekends, trips, or seasons of your life together in one place."
+          title="Belum ada album."
+          description="Album menjaga akhir pekan, perjalanan, atau musim-musim hidup kita tetap rapi di satu tempat."
           icon="📔"
         />
       </>
@@ -39,7 +38,6 @@ export default async function AlbumsPage() {
 
   const albumIds = allAlbums.map((a) => a.id);
 
-  // 2. Count memories per album.
   const countRows = await d
     .select({
       albumId: memories.albumId,
@@ -54,7 +52,6 @@ export default async function AlbumsPage() {
     if (r.albumId) countByAlbum.set(r.albumId, Number(r.count));
   }
 
-  // 3. Get cover media per album — latest memory's first media.
   const coverRows = await d
     .select({
       albumId: memories.albumId,
@@ -76,9 +73,9 @@ export default async function AlbumsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="collections"
-        title="Albums."
-        subtitle="Group memories that belong together."
+        eyebrow="koleksi"
+        title="Album."
+        subtitle="Kelompokkan kenangan yang sejalan rasanya."
         right={<NewAlbumButton />}
       />
 
@@ -110,7 +107,7 @@ export default async function AlbumsPage() {
                       {a.name}
                     </div>
                     <div className="text-xs text-cream-50/80">
-                      {count} memor{count === 1 ? "y" : "ies"}
+                      {count} kenangan
                     </div>
                   </div>
                 </div>

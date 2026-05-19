@@ -26,16 +26,16 @@ export function wibLocalToIso(local: string): string {
   return new Date(`${padded}+07:00`).toISOString();
 }
 
-/** Format a Date for display: "May 18, 2026 · 10:30 WIB". */
+/** Format a Date for display: "18 Mei 2026 · 10:30 WIB". */
 export function formatWibDisplay(d: Date): string {
   const shifted = new Date(d.getTime() + WIB_OFFSET_MINUTES * 60_000);
   const month = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember",
   ][shifted.getUTCMonth()];
   const day = shifted.getUTCDate();
   const year = shifted.getUTCFullYear();
   const hh = String(shifted.getUTCHours()).padStart(2, "0");
   const mm = String(shifted.getUTCMinutes()).padStart(2, "0");
-  return `${month} ${day}, ${year} · ${hh}:${mm} WIB`;
+  return `${day} ${month} ${year} · ${hh}:${mm} WIB`;
 }

@@ -35,7 +35,7 @@ export default async function EditPage({
 
   return (
     <>
-      <PageHeader eyebrow="edit" title="Refine the memory." />
+      <PageHeader eyebrow="ubah" title="Sentuh lagi kenangan ini." />
       <EditForm
         memoryId={item.memory.id}
         initial={{
