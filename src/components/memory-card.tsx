@@ -10,6 +10,7 @@ import { mediaUrl } from "@/lib/media-url";
 import { Avatar } from "./avatar";
 import { Lightbox } from "./lightbox";
 import { CommentsInline } from "./comments-inline";
+import { MediaCarousel } from "./media-carousel";
 
 interface Props {
   item: MemoryWithRelations;
@@ -82,12 +83,13 @@ export function MemoryCard({ item, index = 0, currentUserId }: Props) {
           </div>
         </header>
 
-        {/* Media */}
+        {/* Media — swipeable carousel */}
         {media.length > 0 && (
           <div className="mt-4 px-3 sm:px-4">
-            <MediaCollage
+            <MediaCarousel
               media={lightboxImages}
               onOpen={(i) => setLightboxIndex(i)}
+              aspect="aspect-[4/5] sm:aspect-[3/4]"
             />
           </div>
         )}
@@ -132,130 +134,12 @@ export function MemoryCard({ item, index = 0, currentUserId }: Props) {
   );
 }
 
-interface CollageMedia {
-  url: string;
-  kind: "image" | "video";
-}
-
-function MediaCollage({
-  media,
-  onOpen,
-}: {
-  media: CollageMedia[];
-  onOpen: (index: number) => void;
-}) {
-  const count = media.length;
-
-  if (count === 1) {
-    return (
-      <button
-        onClick={() => onOpen(0)}
-        className="block w-full"
-      >
-        <MediaTile m={media[0]} className="aspect-[4/5] sm:aspect-[3/4]" />
-      </button>
-    );
-  }
-  if (count === 2) {
-    return (
-      <div className="grid grid-cols-2 gap-1.5">
-        {media.map((m, i) => (
-          <button key={i} onClick={() => onOpen(i)}>
-            <MediaTile m={m} className="aspect-[3/4]" />
-          </button>
-        ))}
-      </div>
-    );
-  }
-  if (count === 3) {
-    return (
-      <div className="grid grid-cols-2 gap-1.5">
-        <button onClick={() => onOpen(0)} className="row-span-2">
-          <MediaTile m={media[0]} className="h-full aspect-[3/4]" />
-        </button>
-        <button onClick={() => onOpen(1)}>
-          <MediaTile m={media[1]} className="aspect-square" />
-        </button>
-        <button onClick={() => onOpen(2)}>
-          <MediaTile m={media[2]} className="aspect-square" />
-        </button>
-      </div>
-    );
-  }
-  // 4+
-  return (
-    <div className="grid grid-cols-2 gap-1.5">
-      {media.slice(0, 4).map((m, i) => (
-        <button key={i} onClick={() => onOpen(i)} className="relative">
-          <MediaTile m={m} className="aspect-square" />
-          {i === 3 && count > 4 ? (
-            <div className="absolute inset-0 grid place-items-center rounded-2xl bg-ink-900/40 text-2xl font-light text-cream-50 backdrop-blur-sm">
-              +{count - 4}
-            </div>
-          ) : null}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function MediaTile({
-  m,
-  className,
-}: {
-  m: CollageMedia;
-  className?: string;
-}) {
-  const [loaded, setLoaded] = useState(false);
-  return (
-    <div
-      className={`relative overflow-hidden rounded-2xl placeholder frame-soft ${className ?? ""}`}
-    >
-      {m.kind === "video" ? (
-        <video
-          src={m.url}
-          className="h-full w-full object-cover"
-          muted
-          playsInline
-          preload="metadata"
-          onLoadedData={() => setLoaded(true)}
-        />
-      ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={m.url}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          onLoad={() => setLoaded(true)}
-          className={`h-full w-full object-cover transition-opacity duration-700 ${
-            loaded ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      )}
-      {m.kind === "video" && (
-        <div className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-ink-900/55 text-cream-50 backdrop-blur">
-          <PlayIcon className="h-3 w-3" />
-        </div>
-      )}
-    </div>
-  );
-}
-
 function DotsIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor">
       <circle cx="5" cy="12" r="1.6" />
       <circle cx="12" cy="12" r="1.6" />
       <circle cx="19" cy="12" r="1.6" />
-    </svg>
-  );
-}
-
-function PlayIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor">
-      <path d="M8 5v14l11-7z" />
     </svg>
   );
 }

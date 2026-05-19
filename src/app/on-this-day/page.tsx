@@ -33,7 +33,7 @@ export default async function OnThisDayPage() {
       <PageHeader
         eyebrow="di hari yang sama"
         title="Hari ini, di waktu yang lain."
-        subtitle="Kenangan dari tahun-tahun lalu di tanggal yang sama."
+        subtitle="Kenangan dihari ini, dan dari tahun-tahun lalu di tanggal yang sama."
       />
       <MemoryFeed
         initial={items}

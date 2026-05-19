@@ -17,9 +17,57 @@ interface Props {
   onChange: (items: UploadedItem[]) => void;
 }
 
+interface UploadResponse {
+  uploaded: Array<{
+    r2Key: string;
+    kind: "image" | "video";
+    mimeType: string;
+    bytes: number;
+    name: string;
+  }>;
+}
+
+function uploadWithProgress(
+  formData: FormData,
+  onProgress: (pct: number) => void,
+): Promise<UploadResponse> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        onProgress((e.loaded / e.total) * 100);
+      }
+    });
+    xhr.addEventListener("load", () => {
+      try {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(JSON.parse(xhr.responseText) as UploadResponse);
+        } else {
+          let msg = `Unggahan gagal (${xhr.status})`;
+          try {
+            const j = JSON.parse(xhr.responseText) as { error?: string };
+            if (j.error) msg = j.error;
+          } catch {}
+          reject(new Error(msg));
+        }
+      } catch (e) {
+        reject(e instanceof Error ? e : new Error("Gagal parse respons"));
+      }
+    });
+    xhr.addEventListener("error", () =>
+      reject(new Error("Tidak bisa tersambung")),
+    );
+    xhr.addEventListener("abort", () => reject(new Error("Dibatalkan")));
+    xhr.open("POST", "/api/upload");
+    xhr.send(formData);
+  });
+}
+
 export function UploadZone({ value, onChange }: Props) {
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -29,8 +77,14 @@ export function UploadZone({ value, onChange }: Props) {
       if (arr.length === 0) return;
       setError(null);
       setUploading(true);
+      setProgress(0);
+      setPhase(
+        arr.length === 1
+          ? `Mengunggah ${arr[0].name}`
+          : `Mengunggah ${arr.length} berkas`,
+      );
 
-      // Build local previews immediately for instant feedback
+      // Local previews for instant feedback
       const previews = arr.map((f) => ({
         file: f,
         url: URL.createObjectURL(f),
@@ -39,32 +93,28 @@ export function UploadZone({ value, onChange }: Props) {
       try {
         const form = new FormData();
         for (const f of arr) form.append("files", f);
-        const res = await fetch("/api/upload", { method: "POST", body: form });
-        if (!res.ok) {
-          const j = (await res.json().catch(() => ({}))) as { error?: string };
-          throw new Error(j.error ?? `Gagal unggah (${res.status})`);
-        }
-        const j = (await res.json()) as {
-          uploaded: Array<{
-            r2Key: string;
-            kind: "image" | "video";
-            mimeType: string;
-            bytes: number;
-            name: string;
-          }>;
-        };
+        const j = await uploadWithProgress(form, (pct) => {
+          setProgress(pct);
+          if (pct >= 99) setPhase("Menyelesaikan…");
+        });
         const newItems = j.uploaded.map((u, i) => ({
           ...u,
           previewUrl: previews[i]?.url ?? "",
         }));
         onChange([...value, ...newItems]);
+        setProgress(100);
       } catch (e) {
         setError(
           e instanceof Error ? e.message : "Ada yang tidak beres saat unggah.",
         );
         for (const p of previews) URL.revokeObjectURL(p.url);
       } finally {
-        setUploading(false);
+        // Brief delay so the 100% state is visible
+        setTimeout(() => {
+          setUploading(false);
+          setProgress(0);
+          setPhase("");
+        }, 400);
       }
     },
     [value, onChange],
@@ -117,24 +167,38 @@ export function UploadZone({ value, onChange }: Props) {
         </div>
       </label>
 
-      {error ? (
-        <div className="rounded-2xl border border-rose-dusty/30 bg-rose-mist/40 px-4 py-3 text-sm text-ink-700">
-          {error}
-        </div>
-      ) : null}
-
       <AnimatePresence>
         {uploading && (
           <motion.div
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="rounded-2xl bg-cream-100/60 px-4 py-3 text-sm text-ink-500"
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.25 }}
+            className="glass overflow-hidden rounded-2xl px-4 py-3"
           >
-            Mengunggah…
+            <div className="flex items-baseline justify-between gap-3 pb-2">
+              <span className="truncate text-sm text-ink-700">{phase}</span>
+              <span className="text-xs tabular-nums text-ink-500">
+                {Math.round(progress)}%
+              </span>
+            </div>
+            <div className="relative h-1.5 overflow-hidden rounded-full bg-ink-900/[0.06]">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-rose-blush via-rose-dusty to-rose-dustier shadow-[0_0_10px_rgba(212,165,165,0.5)]"
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {error ? (
+        <div className="rounded-2xl border border-rose-dusty/30 bg-rose-mist/40 px-4 py-3 text-sm text-ink-700">
+          {error}
+        </div>
+      ) : null}
 
       {value.length > 0 && (
         <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -168,7 +232,7 @@ export function UploadZone({ value, onChange }: Props) {
                   type="button"
                   onClick={() => removeAt(i)}
                   className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-ink-900/60 text-cream-50 backdrop-blur transition hover:bg-ink-900/80"
-                  aria-label="Remove"
+                  aria-label="Hapus"
                 >
                   <XIcon className="h-3 w-3" />
                 </button>

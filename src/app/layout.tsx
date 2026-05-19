@@ -26,7 +26,7 @@ const display = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Dear — kenangan kita",
+  title: "Dear Future Us",
   description: "Tempat tenang untuk berdua.",
   icons: {
     icon: "/favicon.svg",

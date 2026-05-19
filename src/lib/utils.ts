@@ -51,14 +51,14 @@ export function formatRelative(d: Date): string {
 }
 
 export const MOODS = [
-  { id: "love",        emoji: "💗", label: "jatuh cinta" },
-  { id: "happy",       emoji: "🌞", label: "bahagia" },
-  { id: "calm",        emoji: "🌿", label: "tenang" },
-  { id: "nostalgic",   emoji: "🍂", label: "rindu" },
+  { id: "love", emoji: "💗", label: "jatuh cinta" },
+  { id: "happy", emoji: "🌞", label: "bahagia" },
+  { id: "calm", emoji: "🌿", label: "tenang" },
+  { id: "nostalgic", emoji: "🍂", label: "rindu" },
   { id: "bittersweet", emoji: "🌙", label: "haru" },
-  { id: "grateful",    emoji: "✨", label: "bersyukur" },
-  { id: "silly",       emoji: "🎈", label: "konyol" },
-  { id: "cozy",        emoji: "🍵", label: "hangat" },
+  { id: "grateful", emoji: "✨", label: "bersyukur" },
+  { id: "silly", emoji: "🎈", label: "kocak" },
+  { id: "cozy", emoji: "🍵", label: "warm" },
 ] as const;
 
 export type MoodId = (typeof MOODS)[number]["id"];

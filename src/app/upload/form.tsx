@@ -77,7 +77,7 @@ export function UploadForm({ albums }: Props) {
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             rows={4}
-            placeholder="Apa yang ingin kamu kenang dari momen ini?"
+            placeholder="Apa yang ingin kita kenang dari momen ini?"
             className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 font-serif text-[17px] leading-relaxed outline-none transition focus:border-rose-dusty/40"
           />
         </div>
@@ -115,7 +115,7 @@ export function UploadForm({ albums }: Props) {
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="Di dapur, di Kyoto, di perjalanan panjang…"
+            placeholder="Dimana kenangan ini tercipta?"
             className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
           />
         </Field>

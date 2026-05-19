@@ -23,7 +23,7 @@ export default async function NotesPage() {
         <PageHeader
           eyebrow="buku kita"
           title="Catatan."
-          subtitle="Tempat menulis apa pun bersama — surat, daftar, rencana, lintasan pikiran."
+          subtitle="Apa pun yang ada di kepala, tuangkan saja di sini."
           right={<NewNoteButton />}
         />
         <EmptyState
@@ -46,7 +46,7 @@ export default async function NotesPage() {
       <PageHeader
         eyebrow="buku kita"
         title="Catatan."
-        subtitle="Tempat menulis apa pun bersama — surat, daftar, rencana, lintasan pikiran."
+        subtitle="Apa pun yang ada di kepala, tuangkan saja di sini."
         right={<NewNoteButton />}
       />
 
@@ -72,7 +72,7 @@ export default async function NotesPage() {
                   </div>
                   {n.pinned ? (
                     <span className="rounded-full bg-rose-mist/70 px-2 py-0.5 text-[10px] uppercase tracking-wider text-ink-700">
-                      ditempel
+                      Pinned
                     </span>
                   ) : null}
                 </div>

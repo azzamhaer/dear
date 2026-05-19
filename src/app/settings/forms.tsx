@@ -160,7 +160,7 @@ function ProfileForm({ user }: { user: UserShape }) {
           className="w-full cursor-not-allowed rounded-2xl border border-ink-900/10 bg-cream-100/60 px-4 py-3 text-ink-500 outline-none"
         />
         <p className="mt-1 text-xs text-ink-400">
-          Username tidak bisa diubah setelah dibuat.
+          Untuk alasan cinta, username tidak bisa diubah setelah dibuat.
         </p>
       </div>
 
@@ -286,11 +286,10 @@ function PasswordForm() {
 
       {status ? (
         <div
-          className={`rounded-2xl px-4 py-3 text-sm ${
-            status.kind === "ok"
+          className={`rounded-2xl px-4 py-3 text-sm ${status.kind === "ok"
               ? "bg-rose-mist/40 text-ink-700"
               : "border border-rose-dusty/30 bg-rose-mist/40 text-ink-700"
-          }`}
+            }`}
         >
           {status.msg}
         </div>

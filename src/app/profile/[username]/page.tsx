@@ -114,7 +114,7 @@ export default async function ProfilePage({
                 href="/settings"
                 className="mt-3 inline-block text-xs italic text-ink-400 hover:text-ink-700"
               >
-                Tuliskan bio singkat tentangmu di sini…
+                Tuliskan bio singkat terpuitis kamu di sini…
               </Link>
             ) : null}
 

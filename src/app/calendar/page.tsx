@@ -10,7 +10,7 @@ export default function CalendarPage() {
       <PageHeader
         eyebrow="kalender"
         title="Hari demi hari yang kita simpan."
-        subtitle="Pilih tanggal untuk kembali ke sana."
+        subtitle="Pilih tanggal untuk membuka kembali lembaran dikala itu."
       />
       <CalendarView
         initialYear={wibNow.getUTCFullYear()}

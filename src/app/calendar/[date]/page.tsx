@@ -48,7 +48,7 @@ export default async function CalendarDayPage({
         initial={items}
         currentUserId={user?.id}
         paginate={false}
-        emptyTitle="Belum ada apa-apa untuk hari ini."
+        emptyTitle="Belum ada apa-apa untuk tanggal ini."
         emptyDescription="Masih ada waktu untuk membuatnya."
       />
     </>

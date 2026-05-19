@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Lightbox } from "@/components/lightbox";
+import { MediaCarousel } from "@/components/media-carousel";
 
 interface MediaItem {
   url: string;
@@ -13,32 +14,11 @@ export function MemoryMediaGallery({ media }: { media: MediaItem[] }) {
 
   return (
     <>
-      <div className="space-y-4">
-        {media.map((m, i) => (
-          <figure
-            key={i}
-            className="cursor-zoom-in overflow-hidden rounded-3xl placeholder frame-soft"
-            onClick={() => setOpenIndex(i)}
-          >
-            {m.kind === "video" ? (
-              <video
-                src={m.url}
-                controls
-                playsInline
-                className="h-auto w-full"
-              />
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={m.url}
-                alt=""
-                className="h-auto w-full"
-                loading="lazy"
-              />
-            )}
-          </figure>
-        ))}
-      </div>
+      <MediaCarousel
+        media={media}
+        onOpen={(i) => setOpenIndex(i)}
+        aspect="aspect-[4/5]"
+      />
 
       <Lightbox
         open={openIndex !== null}

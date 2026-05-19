@@ -122,9 +122,8 @@ export function CalendarView({
             >
               <Link
                 href={`/calendar/${ymd}`}
-                className={`relative grid h-full w-full place-items-center rounded-xl text-sm transition hover:scale-[1.04] active:scale-[0.97] ${bgByIntensity[intensity]} ${
-                  isToday ? "ring-2 ring-ink-900/40" : ""
-                }`}
+                className={`relative grid h-full w-full place-items-center rounded-xl text-sm transition hover:scale-[1.04] active:scale-[0.97] ${bgByIntensity[intensity]} ${isToday ? "ring-2 ring-ink-900/40" : ""
+                  }`}
                 title={
                   count ? `${count} kenangan di tanggal ${d}` : `tanggal ${d}`
                 }
@@ -132,9 +131,8 @@ export function CalendarView({
                 <span className="font-medium">{d}</span>
                 {count > 0 ? (
                   <span
-                    className={`absolute -bottom-0.5 right-1 text-[9px] font-semibold tabular-nums ${
-                      intensity >= 4 ? "text-cream-50/90" : "text-ink-700/70"
-                    }`}
+                    className={`absolute -bottom-0.5 right-1 text-[9px] font-semibold tabular-nums ${intensity >= 4 ? "text-cream-50/90" : "text-ink-700/70"
+                      }`}
                   >
                     {count}
                   </span>
@@ -155,7 +153,7 @@ export function CalendarView({
         >
           Hari ini
         </button>
-        <span>Hari yang lebih pekat menyimpan lebih banyak.</span>
+        <span>Memento mori, jadi jangan lupa bahagia.</span>
       </div>
     </div>
   );

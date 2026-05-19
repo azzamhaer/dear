@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
@@ -16,6 +16,26 @@ export function MemoryDetail({
   const [open, setOpen] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  // Close on outside click / Esc
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   async function onDelete() {
     setDeleting(true);
@@ -30,40 +50,46 @@ export function MemoryDetail({
 
   return (
     <>
-      <div className="relative">
+      <div ref={ref} style={{ position: "relative" }}>
         <button
           onClick={() => setOpen((v) => !v)}
-          className="rounded-full p-1.5 text-ink-500 hover:bg-ink-900/5 hover:text-ink-900"
+          className="rounded-full p-1.5 text-ink-500 transition hover:bg-ink-900/5 hover:text-ink-900"
           aria-label="Pilihan kenangan"
+          aria-haspopup="menu"
+          aria-expanded={open}
         >
           <DotsIcon className="h-4 w-4" />
         </button>
         {open ? (
           <div
-            className="fixed inset-0 z-40"
-            onClick={() => setOpen(false)}
+            role="menu"
+            style={{
+              position: "absolute",
+              right: 0,
+              top: "100%",
+              marginTop: 8,
+              width: 180,
+              zIndex: 50,
+            }}
+            className="glass-strong rounded-2xl p-1.5 shadow-soft animate-fade-in"
           >
-            <div
-              className="glass absolute right-3 top-12 w-44 rounded-2xl p-1.5 shadow-soft"
-              onClick={(e) => e.stopPropagation()}
+            <Link
+              href={`/memory/${memoryId}/edit`}
+              onClick={() => setOpen(false)}
+              className="block rounded-xl px-3 py-2 text-sm text-ink-700 hover:bg-ink-900/5"
             >
-              <Link
-                href={`/memory/${memoryId}/edit`}
-                className="block rounded-xl px-3 py-2 text-sm text-ink-700 hover:bg-ink-900/5"
-              >
-                Ubah
-              </Link>
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  setConfirmDel(true);
-                }}
-                disabled={!canEdit}
-                className="block w-full rounded-xl px-3 py-2 text-left text-sm text-rose-dustier hover:bg-rose-mist/40 disabled:opacity-40"
-              >
-                Hapus
-              </button>
-            </div>
+              Ubah
+            </Link>
+            <button
+              onClick={() => {
+                setOpen(false);
+                setConfirmDel(true);
+              }}
+              disabled={!canEdit}
+              className="block w-full rounded-xl px-3 py-2 text-left text-sm text-rose-dustier hover:bg-rose-mist/40 disabled:opacity-40"
+            >
+              Hapus
+            </button>
           </div>
         ) : null}
       </div>

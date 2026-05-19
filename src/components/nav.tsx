@@ -9,13 +9,12 @@ interface NavProps {
   user: { username: string; displayName: string; avatarUrl: string | null };
 }
 
-/* Desktop nav links (5 items fit fine) */
+/* Desktop nav links — Hari Ini lives in the profile dropdown */
 const desktopLinks = [
   { href: "/", label: "Beranda" },
   { href: "/albums", label: "Album" },
   { href: "/calendar", label: "Kalender" },
   { href: "/notes", label: "Catatan" },
-  { href: "/on-this-day", label: "Hari Ini" },
 ];
 
 /* Mobile bottom nav — icons only, 4 items */

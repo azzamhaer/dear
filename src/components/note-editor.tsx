@@ -147,7 +147,7 @@ export function NoteEditor({ initial }: { initial?: Note }) {
                 }
                 className="h-4 w-4 accent-rose-dusty"
               />
-              <span>Tempel di atas</span>
+              <span>Pin di atas</span>
             </label>
           ) : null}
           <span className="text-xs text-ink-400">
@@ -175,7 +175,7 @@ export function NoteEditor({ initial }: { initial?: Note }) {
       <ConfirmDialog
         open={confirmDel}
         title="Hapus catatan ini?"
-        description="Yang tertulis di sini akan ikut hilang."
+        description="Ini tidak akan bisa dikembalikan."
         confirmLabel="Hapus"
         busy={deleting}
         onConfirm={remove}

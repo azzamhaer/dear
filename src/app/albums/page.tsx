@@ -24,7 +24,7 @@ export default async function AlbumsPage() {
         <PageHeader
           eyebrow="koleksi"
           title="Album."
-          subtitle="Kelompokkan kenangan yang sejalan rasanya."
+          subtitle="Untuk kenangan yang terlalu mirip rasanya untuk dipisahkan, maka satukanlah."
           right={<NewAlbumButton />}
         />
         <EmptyState
@@ -75,7 +75,7 @@ export default async function AlbumsPage() {
       <PageHeader
         eyebrow="koleksi"
         title="Album."
-        subtitle="Kelompokkan kenangan yang sejalan rasanya."
+        subtitle="Untuk kenangan yang terlalu mirip rasanya untuk dipisahkan, maka satukanlah."
         right={<NewAlbumButton />}
       />
 

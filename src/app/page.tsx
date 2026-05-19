@@ -23,7 +23,7 @@ export default async function HomePage() {
       <PageHeader
         eyebrow={greeting}
         title={`Hai, ${firstName}.`}
-        subtitle="Semua yang pernah kita simpan, di satu tempat sunyi ini."
+        subtitle="Semua yang terlalu berharga untuk diucapkan, kita titipkan di sini."
       />
 
       <OnThisDayStrip />
@@ -33,7 +33,7 @@ export default async function HomePage() {
         currentUserId={user?.id}
         pageSize={PAGE_SIZE}
         emptyTitle="Mulai dari sini."
-        emptyDescription="Unggah satu foto, atau sedikit video — tulis beberapa kata. Sesederhana itu."
+        emptyDescription="Upload sebuah foto atau video Karena sejatinya one photo worth than a thousand words."
         emptyCta={{ href: "/upload", label: "Simpan yang pertama" }}
       />
     </>
