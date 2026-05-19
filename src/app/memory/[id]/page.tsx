@@ -26,10 +26,7 @@ export default async function MemoryPage({
   ]);
   if (!item) notFound();
 
-  const date =
-    item.memory.memoryDate instanceof Date
-      ? item.memory.memoryDate
-      : new Date((item.memory.memoryDate as unknown as number) * 1000);
+  const date = new Date(item.memory.memoryDate);
 
   return (
     <article className="space-y-6 pt-2">

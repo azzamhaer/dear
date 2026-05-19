@@ -220,7 +220,7 @@ export function UploadZone({ value, onChange }: Props) {
 
       {value.length > 0 && (
         <Reorder.Group
-          axis="y"
+          axis="x"
           values={value}
           onReorder={onChange}
           className="grid grid-cols-3 gap-2 sm:grid-cols-4"

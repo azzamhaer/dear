@@ -29,10 +29,7 @@ export default async function EditPage({
     .from(albums)
     .orderBy(desc(albums.updatedAt));
 
-  const date =
-    item.memory.memoryDate instanceof Date
-      ? item.memory.memoryDate
-      : new Date((item.memory.memoryDate as unknown as number) * 1000);
+  const date = new Date(item.memory.memoryDate);
 
   return (
     <>

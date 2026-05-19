@@ -22,10 +22,7 @@ export function MemoryCard({ item, index = 0, currentUserId }: Props) {
   const { memory, media, author, album, commentCount } = item;
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  const date =
-    memory.memoryDate instanceof Date
-      ? memory.memoryDate
-      : new Date((memory.memoryDate as unknown as number) * 1000);
+  const date = new Date(memory.memoryDate);
 
   const lightboxImages = media.map((m) => ({
     url: mediaUrl(m.r2Key),
