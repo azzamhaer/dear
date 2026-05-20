@@ -27,6 +27,7 @@ export function MemoryFeed({
   emptyTitle = "Belum ada kenangan.",
   emptyDescription = "Sepertinya kita belum menciptakan kenangan di tanggal ini.",
   emptyCta = { href: "/upload", label: "Tambah yang pertama" },
+  emptyIllustration,
   paginate = true,
 }: Props) {
   const [items, setItems] = useState(initial);
