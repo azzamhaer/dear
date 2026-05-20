@@ -289,3 +289,51 @@ button { -webkit-tap-highlight-color: transparent; }
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Floating hearts micro-animation */
+@keyframes dear-heart-float {
+  0% {
+    transform: translate(-50%, -50%) translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(var(--drift, 0px), -120px) rotate(8deg);
+    opacity: 0;
+  }
+}
+
+/* Polaroid tilt for feed cards */
+.tilt-card {
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tilt-card:hover {
+  transform: translateY(-3px) rotate(0deg) !important;
+  box-shadow:
+    inset 0 1.2px 0 rgba(255, 255, 255, 0.95),
+    0 1px 0 rgba(31, 26, 23, 0.04),
+    0 28px 60px -22px rgba(31, 26, 23, 0.22),
+    0 8px 24px -8px rgba(212, 165, 165, 0.3);
+}
+
+/* Falling rose petals for special days */
+@keyframes dear-petal-fall {
+  0% {
+    transform: translateY(-10vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) translateX(var(--drift, 30px)) rotate(360deg);
+    opacity: 0.85;
+  }
+}

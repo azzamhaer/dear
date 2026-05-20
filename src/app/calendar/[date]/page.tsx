@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/session";
 import { PageHeader } from "@/components/page-header";
 import { MemoryFeed } from "@/components/memory-feed";
 import { BackButton } from "@/components/back-button";
+import { CalendarEmpty } from "@/components/illustrations";
 import { formatLongDate } from "@/lib/utils";
 
 export const runtime = "edge";

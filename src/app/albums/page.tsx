@@ -5,6 +5,7 @@ import { albums, media, memories } from "@/db/schema";
 import { mediaUrl } from "@/lib/r2";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
+import { AlbumEmpty } from "@/components/illustrations";
 import { NewAlbumButton } from "./new-button";
 
 export const runtime = "edge";

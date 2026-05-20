@@ -28,6 +28,8 @@ export default async function SettingsPage() {
           displayName: user.displayName,
           avatarUrl: user.avatarUrl ?? null,
           bio: user.bio ?? "",
+          birthdate: user.birthdate ?? "",
+          coupleStartDate: user.coupleStartDate ?? "",
         }}
       />
     </>

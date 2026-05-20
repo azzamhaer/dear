@@ -16,6 +16,8 @@ export const users = sqliteTable("users", {
   passwordSalt: text("password_salt").notNull(),
   avatarUrl: text("avatar_url"),
   bio: text("bio"),
+  birthdate: text("birthdate"), // YYYY-MM-DD
+  coupleStartDate: text("couple_start_date"), // YYYY-MM-DD
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -147,10 +149,30 @@ export const notes = sqliteTable("notes", {
   updatedIdx: index("notes_updated_idx").on(t.updatedAt),
 }));
 
+/** Letters from the future — locked until unlocksAt. */
+export const letters = sqliteTable("letters", {
+  id: text("id").primaryKey(),
+  authorId: text("author_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull().default(""),
+  body: text("body").notNull().default(""),
+  unlocksAt: integer("unlocks_at", { mode: "timestamp" }).notNull(),
+  openedAt: integer("opened_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+}, (t) => ({
+  unlocksIdx: index("letters_unlocks_idx").on(t.unlocksAt),
+  authorIdx: index("letters_author_idx").on(t.authorId),
+}));
+
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 export type Note = typeof notes.$inferSelect;
 export type NewNote = typeof notes.$inferInsert;
+export type Letter = typeof letters.$inferSelect;
+export type NewLetter = typeof letters.$inferInsert;
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

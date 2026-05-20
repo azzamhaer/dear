@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "@/lib/toast";
 
 interface UserShape {
   id: string;
@@ -9,6 +10,8 @@ interface UserShape {
   displayName: string;
   avatarUrl: string | null;
   bio: string;
+  birthdate: string;
+  coupleStartDate: string;
 }
 
 export function SettingsForms({ user }: { user: UserShape }) {
@@ -24,6 +27,8 @@ function ProfileForm({ user }: { user: UserShape }) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState(user.displayName);
   const [bio, setBio] = useState(user.bio);
+  const [birthdate, setBirthdate] = useState(user.birthdate);
+  const [coupleStartDate, setCoupleStartDate] = useState(user.coupleStartDate);
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -52,6 +57,7 @@ function ProfileForm({ user }: { user: UserShape }) {
       if (!res.ok) throw new Error("Foto profil belum bisa diganti.");
       setAvatarUrl(url);
       setStatus("Foto diganti.");
+      toast.success("Foto profil diganti.");
       router.refresh();
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "Ada yang tidak beres.");
@@ -67,13 +73,19 @@ function ProfileForm({ user }: { user: UserShape }) {
       const res = await fetch("/api/auth/profile", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ displayName, bio }),
+        body: JSON.stringify({
+          displayName,
+          bio,
+          birthdate: birthdate || null,
+          coupleStartDate: coupleStartDate || null,
+        }),
       });
       if (!res.ok) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(j.error ?? "Belum bisa diganti.");
       }
       setStatus("Tersimpan.");
+      toast.success("Profil tersimpan.");
       router.refresh();
     } catch (e) {
       setStatus(e instanceof Error ? e.message : "Ada yang tidak beres.");
@@ -149,6 +161,37 @@ function ProfileForm({ user }: { user: UserShape }) {
         </p>
       </div>
 
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
+            Tanggal lahirmu
+          </label>
+          <input
+            type="date"
+            value={birthdate}
+            onChange={(e) => setBirthdate(e.target.value)}
+            className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
+          />
+          <p className="mt-1 text-xs text-ink-400">
+            Kami menabur kelopak setiap kali harimu tiba.
+          </p>
+        </div>
+        <div>
+          <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
+            Sejak kapan kita?
+          </label>
+          <input
+            type="date"
+            value={coupleStartDate}
+            onChange={(e) => setCoupleStartDate(e.target.value)}
+            className="w-full rounded-2xl border border-ink-900/10 bg-cream-50 px-4 py-3 outline-none transition focus:border-rose-dusty/40"
+          />
+          <p className="mt-1 text-xs text-ink-400">
+            Untuk &ldquo;Bersama X hari&rdquo; di beranda.
+          </p>
+        </div>
+      </div>
+
       <div>
         <label className="mb-1.5 block text-xs uppercase tracking-wider text-ink-400">
           Username (untuk masuk)
@@ -176,7 +219,10 @@ function ProfileForm({ user }: { user: UserShape }) {
           disabled={
             saving ||
             !displayName.trim() ||
-            (displayName === user.displayName && bio === user.bio)
+            (displayName === user.displayName &&
+              bio === user.bio &&
+              birthdate === user.birthdate &&
+              coupleStartDate === user.coupleStartDate)
           }
           className="rounded-full bg-ink-900 px-5 py-2.5 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-60"
         >

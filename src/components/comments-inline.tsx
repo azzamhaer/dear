@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Avatar } from "./avatar";
 import { ConfirmDialog } from "./confirm-dialog";
 import { formatRelative } from "@/lib/utils";
+import { spawnHeartsFromElement } from "@/lib/hearts";
+import { toast } from "@/lib/toast";
 
 interface CommentItem {
   id: string;
@@ -53,6 +54,8 @@ export function CommentsInline({
     if (expanded || initialCount > 0) load();
   }, [expanded, initialCount, load]);
 
+  const sendBtnRef = useRef<HTMLButtonElement>(null);
+
   async function send() {
     const body = draft.trim();
     if (!body) return;
@@ -66,6 +69,7 @@ export function CommentsInline({
       if (res.ok) {
         setDraft("");
         await load();
+        if (sendBtnRef.current) spawnHeartsFromElement(sendBtnRef.current, 5);
       }
     } finally {
       setSending(false);
@@ -79,6 +83,7 @@ export function CommentsInline({
       await fetch(`/api/comments/${toDelete.id}`, { method: "DELETE" });
       setItems((prev) => prev?.filter((c) => c.id !== toDelete.id) ?? null);
       setToDelete(null);
+      toast.success("Pesan dihapus.");
     } finally {
       setDeleting(false);
     }
@@ -181,9 +186,10 @@ export function CommentsInline({
           className="min-h-[40px] flex-1 resize-none rounded-2xl border border-ink-900/10 bg-cream-50 px-3.5 py-2 font-serif text-[14.5px] leading-snug outline-none transition focus:border-rose-dusty/40"
         />
         <button
+          ref={sendBtnRef}
           onClick={send}
           disabled={sending || !draft.trim()}
-          className="rounded-2xl bg-ink-900 px-3.5 py-2 text-xs font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 disabled:opacity-50"
+          className="rounded-2xl bg-ink-900 px-3.5 py-2 text-xs font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 active:scale-[0.96] disabled:opacity-50"
         >
           {sending ? "…" : "Kirim"}
         </button>

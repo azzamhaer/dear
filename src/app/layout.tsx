@@ -2,7 +2,11 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import { Nav } from "@/components/nav";
+import { ToastHost } from "@/components/toast-host";
+import { SpecialDayBanner } from "@/components/special-day";
 import { getCurrentUser } from "@/lib/session";
+import { db } from "@/lib/cloudflare";
+import { users } from "@/db/schema";
 
 const sans = Inter({
   subsets: ["latin"],
@@ -50,6 +54,29 @@ export default async function RootLayout({
 }) {
   const user = await getCurrentUser().catch(() => null);
 
+  // Collect everyone's special dates so we can detect anniversary/birthday.
+  // We only need MM-DD comparisons; safe to read all users (just two of us).
+  let allBirthdates: string[] = [];
+  let coupleStartDate: string | null = null;
+  if (user) {
+    try {
+      const rows = await db()
+        .select({
+          birthdate: users.birthdate,
+          coupleStartDate: users.coupleStartDate,
+        })
+        .from(users);
+      for (const r of rows) {
+        if (r.birthdate) allBirthdates.push(r.birthdate);
+        if (r.coupleStartDate && !coupleStartDate) {
+          coupleStartDate = r.coupleStartDate;
+        }
+      }
+    } catch {
+      // schema may not yet be migrated; ignore
+    }
+  }
+
   return (
     <html
       lang="en"
@@ -74,6 +101,13 @@ export default async function RootLayout({
         >
           {children}
         </main>
+        <ToastHost />
+        {user ? (
+          <SpecialDayBanner
+            birthdates={allBirthdates}
+            coupleStartDate={coupleStartDate}
+          />
+        ) : null}
       </body>
     </html>
   );

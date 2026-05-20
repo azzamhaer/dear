@@ -29,17 +29,21 @@ export function MemoryCard({ item, index = 0, currentUserId }: Props) {
     kind: m.kind as "image" | "video",
   }));
 
+  // Deterministic tilt from memory id (-1.2deg to +1.2deg, skip ~50%)
+  const tilt = tiltFromId(memory.id);
+
   return (
     <>
       <motion.article
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 14, rotate: tilt }}
+        animate={{ opacity: 1, y: 0, rotate: tilt }}
         transition={{
           duration: 0.6,
           ease: [0.22, 1, 0.36, 1],
           delay: Math.min(index, 6) * 0.05,
         }}
-        className="glass overflow-hidden rounded-3xl shadow-card"
+        style={tilt !== 0 ? { transform: `rotate(${tilt}deg)` } : undefined}
+        className="glass tilt-card overflow-hidden rounded-3xl shadow-card"
       >
         {/* Header */}
         <header className="flex items-center justify-between px-5 pt-5 sm:px-6 sm:pt-6">
@@ -139,4 +143,17 @@ function DotsIcon({ className }: { className?: string }) {
       <circle cx="19" cy="12" r="1.6" />
     </svg>
   );
+}
+
+/** Returns a tiny rotation in degrees, deterministic per id. About 50% return 0. */
+function tiltFromId(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) {
+    h = (h * 31 + id.charCodeAt(i)) & 0xffffffff;
+  }
+  // 50% chance of zero tilt to keep things calm
+  if ((h & 1) === 0) return 0;
+  const sign = (h & 2) === 0 ? 1 : -1;
+  const mag = (((h >>> 4) & 0xff) / 255) * 1.2 + 0.3; // 0.3°..1.5°
+  return sign * Math.round(mag * 10) / 10;
 }

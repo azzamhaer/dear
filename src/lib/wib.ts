@@ -26,6 +26,34 @@ export function wibLocalToIso(local: string): string {
   return new Date(`${padded}+07:00`).toISOString();
 }
 
+/** Current WIB date as { year, month, day } (1-based month/day). */
+export function wibToday(): { year: number; month: number; day: number } {
+  const wib = new Date(Date.now() + WIB_OFFSET_MINUTES * 60_000);
+  return {
+    year: wib.getUTCFullYear(),
+    month: wib.getUTCMonth() + 1,
+    day: wib.getUTCDate(),
+  };
+}
+
+/** Days between two YYYY-MM-DD strings (b - a). Positive = a was in the past. */
+export function daysBetween(aIso: string, bIso: string): number {
+  const a = new Date(aIso + "T00:00:00+07:00").getTime();
+  const b = new Date(bIso + "T00:00:00+07:00").getTime();
+  return Math.round((b - a) / (24 * 3600 * 1000));
+}
+
+/** Today's WIB date as YYYY-MM-DD. */
+export function todayWibIso(): string {
+  const { year, month, day } = wibToday();
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+/** Extract MM-DD from a YYYY-MM-DD string. */
+export function monthDay(iso: string): string {
+  return iso.length >= 10 ? iso.slice(5, 10) : iso;
+}
+
 /** Format a Date for display: "18 Mei 2026 · 10:30 WIB". */
 export function formatWibDisplay(d: Date): string {
   const shifted = new Date(d.getTime() + WIB_OFFSET_MINUTES * 60_000);

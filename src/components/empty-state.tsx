@@ -5,15 +5,29 @@ interface Props {
   title: string;
   description?: string;
   cta?: { href: string; label: string };
+  /** Either an SVG illustration component or a small inline node */
+  illustration?: ReactNode;
   icon?: ReactNode;
 }
 
-export function EmptyState({ title, description, cta, icon }: Props) {
+export function EmptyState({
+  title,
+  description,
+  cta,
+  illustration,
+  icon,
+}: Props) {
   return (
     <div className="glass mx-auto my-10 max-w-md rounded-3xl px-6 py-10 text-center shadow-soft">
-      <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-rose-mist/60 text-2xl">
-        {icon ?? "🤍"}
-      </div>
+      {illustration ? (
+        <div className="mx-auto mb-3 h-28 w-28 sm:h-32 sm:w-32">
+          {illustration}
+        </div>
+      ) : (
+        <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-rose-mist/60 text-2xl">
+          {icon ?? "🤍"}
+        </div>
+      )}
       <h3 className="font-display text-2xl italic text-ink-900">{title}</h3>
       {description ? (
         <p className="mx-auto mt-2 max-w-sm text-sm text-ink-500">

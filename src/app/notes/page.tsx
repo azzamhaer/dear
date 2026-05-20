@@ -4,6 +4,7 @@ import { db } from "@/lib/cloudflare";
 import { notes, users } from "@/db/schema";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
+import { NoteEmpty } from "@/components/illustrations";
 import { NewNoteButton } from "./new-button";
 import { formatRelative } from "@/lib/utils";
 
@@ -29,7 +30,7 @@ export default async function NotesPage() {
         <EmptyState
           title="Belum ada yang ditulis."
           description="Tulis yang pertama. Sepotong pesan kecil untuk dibaca nanti."
-          icon="📝"
+          illustration={<NoteEmpty />}
           cta={{ href: "/notes/new", label: "Tulis sesuatu" }}
         />
       </>

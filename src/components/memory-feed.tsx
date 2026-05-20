@@ -14,6 +14,7 @@ interface Props {
   emptyTitle?: string;
   emptyDescription?: string;
   emptyCta?: { href: string; label: string };
+  emptyIllustration?: React.ReactNode;
   /** Disable pagination (used for fixed lists like on-this-day) */
   paginate?: boolean;
 }
@@ -91,6 +92,7 @@ export function MemoryFeed({
         title={emptyTitle}
         description={emptyDescription}
         cta={emptyCta}
+        illustration={emptyIllustration}
       />
     );
   }

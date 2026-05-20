@@ -5,6 +5,7 @@ import { hydrateForRoute } from "@/lib/hydrate-helper";
 import { getCurrentUser } from "@/lib/session";
 import { PageHeader } from "@/components/page-header";
 import { MemoryFeed } from "@/components/memory-feed";
+import { MoonEmpty } from "@/components/illustrations";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
@@ -39,6 +40,7 @@ export default async function OnThisDayPage() {
         initial={items}
         currentUserId={user?.id}
         paginate={false}
+        emptyIllustration={<MoonEmpty />}
         emptyTitle="Belum ada gema dari masa lalu."
         emptyDescription="Kembali tahun depan — pasti ada sesuatu yang menunggu."
       />

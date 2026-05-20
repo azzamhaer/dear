@@ -3,6 +3,8 @@ import { getCurrentUser } from "@/lib/session";
 import { MemoryFeed } from "@/components/memory-feed";
 import { PageHeader } from "@/components/page-header";
 import { OnThisDayStrip } from "@/components/on-this-day-strip";
+import { AffectionStrip } from "@/components/affection-strip";
+import { PolaroidEmpty } from "@/components/illustrations";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
@@ -26,12 +28,15 @@ export default async function HomePage() {
         subtitle="Semua yang terlalu berharga untuk diucapkan, kita titipkan di sini."
       />
 
+      <AffectionStrip />
+
       <OnThisDayStrip />
 
       <MemoryFeed
         initial={memories}
         currentUserId={user?.id}
         pageSize={PAGE_SIZE}
+        emptyIllustration={<PolaroidEmpty />}
         emptyTitle="Mulai dari sini."
         emptyDescription="Upload sebuah foto, karena sejatinya one photo worth than a thousand words."
         emptyCta={{ href: "/upload", label: "Simpan yang pertama" }}

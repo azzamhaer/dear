@@ -14,7 +14,13 @@ export async function PATCH(req: NextRequest) {
     return r as Response;
   }
   const body = (await req.json().catch(() => null)) as
-    | { displayName?: string; avatarKey?: string | null; bio?: string | null }
+    | {
+        displayName?: string;
+        avatarKey?: string | null;
+        bio?: string | null;
+        birthdate?: string | null;
+        coupleStartDate?: string | null;
+      }
     | null;
   if (!body) {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
@@ -41,6 +47,23 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "bio_too_long" }, { status: 400 });
     }
     updates.bio = b || null;
+  }
+  if (body.birthdate !== undefined) {
+    const v = (body.birthdate ?? "").toString().trim();
+    if (v && !/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+      return NextResponse.json({ error: "invalid_birthdate" }, { status: 400 });
+    }
+    updates.birthdate = v || null;
+  }
+  if (body.coupleStartDate !== undefined) {
+    const v = (body.coupleStartDate ?? "").toString().trim();
+    if (v && !/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+      return NextResponse.json(
+        { error: "invalid_couple_start_date" },
+        { status: 400 },
+      );
+    }
+    updates.coupleStartDate = v || null;
   }
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: "nothing_to_update" }, { status: 400 });
