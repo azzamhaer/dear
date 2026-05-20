@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFCF6"/>
+      <stop offset="100%" stop-color="#F4E2E2"/>
+    </linearGradient>
+    <linearGradient id="heart" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8C9C9"/>
+      <stop offset="100%" stop-color="#D4A5A5"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="url(#bg)"/>
+  <!-- Soft glow -->
+  <circle cx="90" cy="90" r="55" fill="#F4E2E2" opacity="0.5"/>
+  <!-- Heart shape -->
+  <path
+    d="M90 138
+       C 60 116, 40 96, 40 74
+       C 40 60, 51 50, 62 50
+       C 73 50, 82 56, 90 68
+       C 98 56, 107 50, 118 50
+       C 129 50, 140 60, 140 74
+       C 140 96, 120 116, 90 138 Z"
+    fill="url(#heart)"
+  />
+  <!-- Highlight -->
+  <ellipse cx="72" cy="78" rx="9" ry="6" fill="#FFFFFF" opacity="0.55"/>
+</svg>

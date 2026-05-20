@@ -156,7 +156,15 @@ export function Nav({ user }: NavProps) {
                   className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-700 hover:bg-ink-900/5"
                 >
                   <SunIcon className="h-4 w-4 text-ink-400" />
-                  Date's Recap
+                  Date&rsquo;s Recap
+                </Link>
+                <Link
+                  href="/letters"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-ink-700 hover:bg-ink-900/5"
+                >
+                  <LetterIcon className="h-4 w-4 text-ink-400" />
+                  Surat masa depan
                 </Link>
                 <Link
                   href="/settings"
@@ -321,6 +329,15 @@ function LogoutIcon({ className }: { className?: string }) {
       <path d="M14 4.5h3.5A1.5 1.5 0 0 1 19 6v12a1.5 1.5 0 0 1-1.5 1.5H14" />
       <path d="M10 8l-4 4 4 4" />
       <path d="M6 12h11" />
+    </svg>
+  );
+}
+
+function LetterIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3.5" y="6" width="17" height="13" rx="2" />
+      <path d="M3.5 8 12 14 20.5 8" />
     </svg>
   );
 }

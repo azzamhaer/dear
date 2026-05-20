@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FBF7F1"/>
+      <stop offset="50%" stop-color="#F4E2E2"/>
+      <stop offset="100%" stop-color="#E8C9C9"/>
+    </linearGradient>
+    <linearGradient id="heart" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8C9C9"/>
+      <stop offset="100%" stop-color="#D4A5A5"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#D4A5A5" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#D4A5A5" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Soft glow around heart -->
+  <circle cx="900" cy="315" r="220" fill="url(#glow)"/>
+
+  <!-- Heart -->
+  <g transform="translate(900 315)">
+    <path
+      d="M0 130
+         C -60 90, -110 50, -110 -10
+         C -110 -45, -80 -70, -50 -70
+         C -25 -70, -5 -55, 0 -30
+         C 5 -55, 25 -70, 50 -70
+         C 80 -70, 110 -45, 110 -10
+         C 110 50, 60 90, 0 130 Z"
+      fill="url(#heart)"
+    />
+    <ellipse cx="-35" cy="-30" rx="20" ry="14" fill="#FFFFFF" opacity="0.5"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text
+    x="120"
+    y="295"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-style="italic"
+    font-size="160"
+    fill="#1F1A17"
+  >Dear<tspan fill="#D4A5A5">.</tspan></text>
+
+  <text
+    x="125"
+    y="370"
+    font-family="Inter, system-ui, sans-serif"
+    font-size="34"
+    fill="#6B5F57"
+  >Kenangan kita berdua, di satu tempat tenang.</text>
+
+  <!-- Subtle bottom mark -->
+  <text
+    x="125"
+    y="540"
+    font-family="Inter, system-ui, sans-serif"
+    font-size="22"
+    fill="#8C8079"
+    letter-spacing="6"
+  >PRIVAT  ·  HANYA  KITA</text>
+</svg>
