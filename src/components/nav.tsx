@@ -341,12 +341,3 @@ function LetterIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
-function LetterIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3.5" y="6" width="17" height="13" rx="2" />
-      <path d="M3.5 8 12 14 20.5 8" />
-    </svg>
-  );
-}
