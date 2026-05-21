@@ -1,10 +1,38 @@
 import { ImageResponse } from "next/og";
 import { eq, inArray, asc } from "drizzle-orm";
-import { db } from "@/lib/cloudflare";
+import { bucket, db } from "@/lib/cloudflare";
 import { albums, letters, media, memories, notes, users } from "@/db/schema";
 import { getTheme, type ShareTheme } from "@/lib/share-themes";
 
 export const runtime = "edge";
+
+/**
+ * Fetch a media object from R2 and return it as a data URL so it can be
+ * embedded inside an ImageResponse without going through the auth-gated
+ * /api/media/[key] route (which would 401 on a server-to-server fetch).
+ */
+async function fetchMediaAsDataUrl(r2Key: string): Promise<string | null> {
+  try {
+    const obj = await bucket().get(r2Key);
+    if (!obj) return null;
+    const buf = await obj.arrayBuffer();
+    const arr = new Uint8Array(buf);
+    // btoa in chunks to avoid call-stack limits on large files
+    let bin = "";
+    const CHUNK = 0x8000;
+    for (let i = 0; i < arr.length; i += CHUNK) {
+      bin += String.fromCharCode.apply(
+        null,
+        arr.subarray(i, i + CHUNK) as unknown as number[],
+      );
+    }
+    const b64 = btoa(bin);
+    const ct = obj.httpMetadata?.contentType ?? "image/jpeg";
+    return `data:${ct};base64,${b64}`;
+  } catch {
+    return null;
+  }
+}
 
 const W = 1080;
 const H = 1920;
@@ -21,16 +49,16 @@ export async function GET(
   const origin = `${url.protocol}//${url.host}`;
 
   if (kind === "memory") {
-    return await memoryStory(id, theme, anonymous, origin);
+    return await memoryStory(id, theme, anonymous);
   }
   if (kind === "album") {
-    return await albumStory(id, theme, anonymous, origin);
+    return await albumStory(id, theme, anonymous);
   }
   if (kind === "note") {
-    return await noteStory(id, theme, anonymous, origin);
+    return await noteStory(id, theme, anonymous);
   }
   if (kind === "letter") {
-    return await letterStory(id, theme, anonymous, origin);
+    return await letterStory(id, theme);
   }
 
   return new Response("not found", { status: 404 });
@@ -42,7 +70,6 @@ async function memoryStory(
   id: string,
   theme: ShareTheme,
   anonymous: boolean,
-  origin: string,
 ) {
   const d = db();
   const [m] = await d.select().from(memories).where(eq(memories.id, id)).limit(1);
@@ -58,7 +85,7 @@ async function memoryStory(
     : await d.select().from(users).where(eq(users.id, m.authorId)).limit(1);
 
   const photo = mediaRows[0];
-  const photoUrl = photo ? `${origin}/api/media/${photo.r2Key}` : null;
+  const photoUrl = photo ? await fetchMediaAsDataUrl(photo.r2Key) : null;
   const date =
     m.memoryDate instanceof Date
       ? m.memoryDate
@@ -143,8 +170,7 @@ async function memoryStory(
 async function albumStory(
   id: string,
   theme: ShareTheme,
-  anonymous: boolean,
-  origin: string,
+  _anonymous: boolean,
 ) {
   const d = db();
   const [a] = await d.select().from(albums).where(eq(albums.id, id)).limit(1);
@@ -167,10 +193,13 @@ async function albumStory(
       if (!coverByMem.has(m.memoryId)) coverByMem.set(m.memoryId, m.r2Key);
     }
   }
-  const photos = memRows
+  const photoKeys = memRows
     .map((m) => coverByMem.get(m.id))
     .filter((k): k is string => !!k)
     .slice(0, 9);
+  const photos = (
+    await Promise.all(photoKeys.map((k) => fetchMediaAsDataUrl(k)))
+  ).filter((u): u is string => !!u);
 
   return new ImageResponse(
     (
@@ -230,11 +259,11 @@ async function albumStory(
             }}
           >
             {photos.length > 0
-              ? photos.map((key, i) => (
+              ? photos.map((dataUrl, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     key={i}
-                    src={`${origin}/api/media/${key}`}
+                    src={dataUrl}
                     alt=""
                     width={272}
                     height={272}
@@ -274,7 +303,6 @@ async function noteStory(
   id: string,
   theme: ShareTheme,
   anonymous: boolean,
-  origin: string,
 ) {
   const d = db();
   const [n] = await d.select().from(notes).where(eq(notes.id, id)).limit(1);
@@ -365,8 +393,6 @@ async function noteStory(
 async function letterStory(
   id: string,
   theme: ShareTheme,
-  anonymous: boolean,
-  origin: string,
 ) {
   const d = db();
   const [l] = await d.select().from(letters).where(eq(letters.id, id)).limit(1);

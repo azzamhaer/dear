@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { SHARE_THEMES, type ShareTheme } from "@/lib/share-themes";
+import { type ShareTheme } from "@/lib/share-themes";
 import { formatWibDisplay } from "@/lib/wib";
 import { formatRelative } from "@/lib/utils";
 
@@ -59,9 +58,7 @@ interface Props {
   children: SharedContent;
 }
 
-export function ShareView({ theme: initialTheme, children, shareId }: Props) {
-  const [theme, setTheme] = useState(initialTheme);
-
+export function ShareView({ theme, children }: Props) {
   return (
     <div
       className={`relative min-h-dvh ${theme.wrapperClass}`}
@@ -80,7 +77,10 @@ export function ShareView({ theme: initialTheme, children, shareId }: Props) {
           >
             Dear<span style={{ color: theme.accent }}>.</span>
           </Link>
-          <span className="rounded-full px-2.5 py-1 text-[10px] uppercase tracking-wider opacity-70" style={{ background: theme.cardBg }}>
+          <span
+            className="rounded-full px-2.5 py-1 text-[10px] uppercase tracking-wider opacity-70"
+            style={{ background: theme.cardBg }}
+          >
             dibagikan
           </span>
         </header>
@@ -95,9 +95,6 @@ export function ShareView({ theme: initialTheme, children, shareId }: Props) {
         ) : (
           <LetterView data={children} theme={theme} />
         )}
-
-        {/* Theme picker */}
-        <ThemeSwitcher current={theme} onChange={setTheme} />
 
         {/* Footer */}
         <footer className="mt-10 text-center text-xs opacity-60">
@@ -423,41 +420,6 @@ function AvatarOrInitial({
       <span style={{ fontSize: size * 0.4 }}>
         {(name || "—").charAt(0).toUpperCase()}
       </span>
-    </div>
-  );
-}
-
-function ThemeSwitcher({
-  current,
-  onChange,
-}: {
-  current: ShareTheme;
-  onChange: (t: ShareTheme) => void;
-}) {
-  return (
-    <div className="mt-8">
-      <p className="mb-2 text-center text-xs uppercase tracking-wider opacity-60">
-        ganti tema
-      </p>
-      <div className="hide-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
-        {SHARE_THEMES.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => onChange(t)}
-            className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs transition ${
-              t.id === current.id
-                ? "border-current opacity-100 shadow-soft"
-                : "border-transparent opacity-60 hover:opacity-90"
-            }`}
-            style={{
-              background: t.id === current.id ? current.cardBg : "rgba(255,255,255,0.15)",
-              backdropFilter: "blur(8px)",
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }
