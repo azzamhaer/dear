@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BackButton } from "./back-button";
 import { ConfirmDialog } from "./confirm-dialog";
+import { ShareButton } from "./share-button";
 
 interface Note {
   id?: string;
@@ -156,12 +157,15 @@ export function NoteEditor({ initial }: { initial?: Note }) {
               : saveState === "saved"
                 ? "Tersimpan"
                 : isNew && !note.title && !note.body
-                  ? "Mulai mengetik, akan tersimpan otomatis"
+                  ? "Catatan tersimpan otomatis"
                   : ""}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
+          {!isNew && note.id ? (
+            <ShareButton kind="note" refId={note.id} allowStory label="Bagikan" />
+          ) : null}
           <button
             onClick={() => setConfirmDel(true)}
             disabled={deleting}

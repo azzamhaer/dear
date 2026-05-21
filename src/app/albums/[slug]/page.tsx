@@ -6,6 +6,7 @@ import { mediaUrl } from "@/lib/r2";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { BackButton } from "@/components/back-button";
+import { ShareButton } from "@/components/share-button";
 import { AlbumActions } from "./actions";
 import { AlbumGrid } from "./grid";
 
@@ -62,7 +63,12 @@ export default async function AlbumPage({
             ? `${memoryRows.length} kenangan tersimpan di sini`
             : undefined)
         }
-        right={<AlbumActions albumId={album.id} albumName={album.name} />}
+        right={
+          <div className="flex items-center gap-2">
+            <ShareButton kind="album" refId={album.id} allowStory />
+            <AlbumActions albumId={album.id} albumName={album.name} />
+          </div>
+        }
       />
 
       {memoryRows.length === 0 ? (

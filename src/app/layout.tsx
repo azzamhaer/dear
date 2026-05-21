@@ -32,7 +32,7 @@ const display = Fraunces({
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://dear.web.id";
 const SITE_NAME = "Dear";
-const SITE_TITLE = "Dear Future Us — kenangan kita berdua";
+const SITE_TITLE = "Dear Future Us";
 const SITE_DESCRIPTION =
   "Tempat tenang menyimpan kenangan berdua. Foto, video, surat, catatan, dan tanggal-tanggal kecil yang berarti.";
 

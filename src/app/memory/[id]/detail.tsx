@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { ShareButton } from "@/components/share-button";
 
 export function MemoryDetail({
   memoryId,
@@ -52,16 +53,18 @@ export function MemoryDetail({
 
   return (
     <>
-      <div ref={ref} style={{ position: "relative" }}>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="rounded-full p-1.5 text-ink-500 transition hover:bg-ink-900/5 hover:text-ink-900"
-          aria-label="Pilihan kenangan"
-          aria-haspopup="menu"
-          aria-expanded={open}
-        >
-          <DotsIcon className="h-4 w-4" />
-        </button>
+      <div className="flex items-center gap-1.5">
+        <ShareButton kind="memory" refId={memoryId} allowComments allowStory />
+        <div ref={ref} style={{ position: "relative" }}>
+          <button
+            onClick={() => setOpen((v) => !v)}
+            className="rounded-full p-1.5 text-ink-500 transition hover:bg-ink-900/5 hover:text-ink-900"
+            aria-label="Pilihan kenangan"
+            aria-haspopup="menu"
+            aria-expanded={open}
+          >
+            <DotsIcon className="h-4 w-4" />
+          </button>
         {open ? (
           <div
             role="menu"
@@ -94,6 +97,7 @@ export function MemoryDetail({
             </button>
           </div>
         ) : null}
+        </div>
       </div>
 
       <ConfirmDialog

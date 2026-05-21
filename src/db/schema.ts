@@ -167,12 +167,34 @@ export const letters = sqliteTable("letters", {
   authorIdx: index("letters_author_idx").on(t.authorId),
 }));
 
+/** Public share links — token-gated read-only access to memories/notes/albums/letters. */
+export const shares = sqliteTable("shares", {
+  id: text("id").primaryKey(), // short slug
+  kind: text("kind").notNull(), // 'memory' | 'note' | 'album' | 'letter'
+  refId: text("ref_id").notNull(),
+  /** JSON: { anonymous?: boolean; includeComments?: boolean; theme?: string; ... } */
+  options: text("options").notNull().default("{}"),
+  viewCount: integer("view_count").notNull().default(0),
+  expiresAt: integer("expires_at", { mode: "timestamp" }),
+  createdBy: text("created_by")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+}, (t) => ({
+  refIdx: index("shares_ref_idx").on(t.kind, t.refId),
+  creatorIdx: index("shares_creator_idx").on(t.createdBy),
+}));
+
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 export type Note = typeof notes.$inferSelect;
 export type NewNote = typeof notes.$inferInsert;
 export type Letter = typeof letters.$inferSelect;
 export type NewLetter = typeof letters.$inferInsert;
+export type Share = typeof shares.$inferSelect;
+export type NewShare = typeof shares.$inferInsert;
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

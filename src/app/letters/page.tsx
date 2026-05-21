@@ -47,7 +47,7 @@ export default async function LettersPage() {
       {rows.length === 0 ? (
         <EmptyState
           title="Belum ada surat."
-          description="Tulis sepucuk untuk diri kalian di masa depan — sebuah pengingat, sebuah harapan, atau sekadar bisikan kecil."
+          description="Tulis sepucuk harapan diri kita di masa depan — sebuah pengingat, sebuah doa, atau sekadar bisikan kecil."
           illustration={<LetterEmpty />}
           cta={{ href: "/letters/new", label: "Tulis suratmu" }}
         />

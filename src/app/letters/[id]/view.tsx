@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { ShareButton } from "@/components/share-button";
 import { toast } from "@/lib/toast";
 
 interface Props {
@@ -85,7 +86,8 @@ export function LetterView({
         </section>
       )}
 
-      <div className="flex items-center justify-end pb-4">
+      <div className="flex items-center justify-between pb-4">
+        <ShareButton kind="letter" refId={id} label="Bagikan" />
         <button
           onClick={() => setConfirmDel(true)}
           disabled={busy}

@@ -41,8 +41,8 @@ export default async function OnThisDayPage() {
         currentUserId={user?.id}
         paginate={false}
         emptyIllustration={<MoonEmpty />}
-        emptyTitle="Belum ada gema dari masa lalu."
-        emptyDescription="Kembali tahun depan — pasti ada sesuatu yang menunggu."
+        emptyTitle="Belum ada ingatan dari masa lalu."
+        emptyDescription="Mulai membuat kenangan kita dari hari ini, kelak akan dikenang kembali di hari yang sama di tahun-tahun mendatang."
       />
     </>
   );
