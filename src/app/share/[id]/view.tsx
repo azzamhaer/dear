@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { type ShareTheme } from "@/lib/share-themes";
+import { type ShareTheme, type ShareOptions } from "@/lib/share-themes";
 import { formatWibDisplay } from "@/lib/wib";
 import { formatRelative } from "@/lib/utils";
+import { EmojiBackdrop } from "@/components/emoji-backdrop";
 
 interface SharedMemory {
   type: "memory";
@@ -55,17 +56,23 @@ interface Props {
   theme: ShareTheme;
   kind: string;
   shareId: string;
+  options: ShareOptions;
   children: SharedContent;
 }
 
-export function ShareView({ theme, children }: Props) {
+export function ShareView({ theme, shareId, options, children }: Props) {
+  const emojis = options.emojis && options.emojis.length > 0
+    ? options.emojis
+    : theme.emoji;
+  const pattern = options.pattern ?? "scattered";
+
   return (
     <div
       className={`relative min-h-dvh ${theme.wrapperClass}`}
       style={{ background: theme.bg }}
     >
-      {/* Floating decorative emojis */}
-      <DecorativeEmoji emoji={theme.emoji} />
+      {/* Floating decorative emojis — dense pattern */}
+      <EmojiBackdrop emojis={emojis} pattern={pattern} />
 
       <div className="relative mx-auto max-w-2xl px-4 py-8 sm:py-12">
         {/* Top brand */}
@@ -87,11 +94,11 @@ export function ShareView({ theme, children }: Props) {
 
         {/* Content */}
         {children.type === "memory" ? (
-          <MemoryView data={children} theme={theme} />
+          <MemoryView data={children} theme={theme} shareId={shareId} />
         ) : children.type === "note" ? (
           <NoteView data={children} theme={theme} />
         ) : children.type === "album" ? (
-          <AlbumView data={children} theme={theme} />
+          <AlbumView data={children} theme={theme} shareId={shareId} />
         ) : (
           <LetterView data={children} theme={theme} />
         )}
@@ -110,7 +117,15 @@ export function ShareView({ theme, children }: Props) {
 
 /* ============================ memory ============================ */
 
-function MemoryView({ data, theme }: { data: SharedMemory; theme: ShareTheme }) {
+function MemoryView({
+  data,
+  theme,
+  shareId,
+}: {
+  data: SharedMemory;
+  theme: ShareTheme;
+  shareId: string;
+}) {
   const date =
     data.memory.memoryDate instanceof Date
       ? data.memory.memoryDate
@@ -165,7 +180,7 @@ function MemoryView({ data, theme }: { data: SharedMemory; theme: ShareTheme }) 
                 <div className="aspect-[4/5] overflow-hidden rounded-2xl">
                   {m.kind === "video" ? (
                     <video
-                      src={`/api/media/${m.r2Key}`}
+                      src={`/api/share-public/${shareId}/${m.r2Key}`}
                       controls
                       playsInline
                       className="h-full w-full object-cover"
@@ -173,7 +188,7 @@ function MemoryView({ data, theme }: { data: SharedMemory; theme: ShareTheme }) 
                   ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={`/api/media/${m.r2Key}`}
+                      src={`/api/share-public/${shareId}/${m.r2Key}`}
                       alt=""
                       loading="lazy"
                       className="h-full w-full object-cover"
@@ -290,7 +305,15 @@ function NoteView({ data, theme }: { data: SharedNote; theme: ShareTheme }) {
 
 /* ============================ album ============================ */
 
-function AlbumView({ data, theme }: { data: SharedAlbum; theme: ShareTheme }) {
+function AlbumView({
+  data,
+  theme,
+  shareId,
+}: {
+  data: SharedAlbum;
+  theme: ShareTheme;
+  shareId: string;
+}) {
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}
@@ -424,36 +447,3 @@ function AvatarOrInitial({
   );
 }
 
-function DecorativeEmoji({ emoji }: { emoji: string[] }) {
-  // Pseudo-random fixed positions for decorative emoji floats
-  const positions = [
-    { top: "8%", left: "6%", size: 22, rot: -8 },
-    { top: "14%", right: "8%", size: 18, rot: 12 },
-    { top: "42%", left: "4%", size: 16, rot: -4 },
-    { top: "55%", right: "5%", size: 20, rot: 8 },
-    { top: "78%", left: "7%", size: 18, rot: 6 },
-    { top: "88%", right: "9%", size: 22, rot: -12 },
-  ];
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {positions.map((p, i) => (
-        <span
-          key={i}
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: p.top,
-            left: (p as { left?: string }).left,
-            right: (p as { right?: string }).right,
-            fontSize: p.size,
-            opacity: 0.55,
-            transform: `rotate(${p.rot}deg)`,
-            filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.08))",
-          }}
-        >
-          {emoji[i % emoji.length]}
-        </span>
-      ))}
-    </div>
-  );
-}

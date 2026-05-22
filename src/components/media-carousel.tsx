@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { MediaImage } from "./media-image";
 
 export interface CarouselMedia {
   url: string;
@@ -9,20 +10,11 @@ export interface CarouselMedia {
 
 interface Props {
   media: CarouselMedia[];
-  /** Click callback: receives the index of the clicked media. */
   onOpen?: (index: number) => void;
-  /** Tailwind aspect class, e.g. "aspect-[4/5]" */
   aspect?: string;
-  /** When true, fill the available height (used in detail page). */
   contain?: boolean;
 }
 
-/**
- * Horizontal scroll-snap carousel for memory media.
- * - Native swipe on mobile, scroll on desktop
- * - Dots indicator + counter for multi-media
- * - Click any tile to trigger onOpen with that index (for lightbox)
- */
 export function MediaCarousel({
   media,
   onOpen,
@@ -78,19 +70,17 @@ export function MediaCarousel({
               onOpen ? "cursor-zoom-in" : "cursor-default"
             }`}
           >
-            <MediaTile m={m} aspect={aspect} contain={contain} />
+            <MediaTile m={m} aspect={aspect} contain={contain} eager={i <= 1} />
           </button>
         ))}
       </div>
 
-      {/* Counter top-right */}
       {!single ? (
         <div className="pointer-events-none absolute right-3 top-3 rounded-full bg-ink-900/55 px-2 py-0.5 text-[11px] font-medium text-cream-50 backdrop-blur">
           {index + 1}/{count}
         </div>
       ) : null}
 
-      {/* Desktop chevron arrows */}
       {!single ? (
         <>
           {index > 0 ? (
@@ -122,7 +112,6 @@ export function MediaCarousel({
         </>
       ) : null}
 
-      {/* Dots */}
       {!single ? (
         <div className="flex items-center justify-center gap-1.5 pt-2.5">
           {media.map((_, i) => (
@@ -148,17 +137,18 @@ function MediaTile({
   m,
   aspect,
   contain,
+  eager,
 }: {
   m: CarouselMedia;
   aspect: string;
   contain: boolean;
+  eager: boolean;
 }) {
-  const [loaded, setLoaded] = useState(false);
-  return (
-    <div
-      className={`relative overflow-hidden ${contain ? "" : `${aspect} rounded-2xl placeholder frame-soft`}`}
-    >
-      {m.kind === "video" ? (
+  if (m.kind === "video") {
+    return (
+      <div
+        className={`relative overflow-hidden ${contain ? "" : `${aspect} rounded-2xl placeholder frame-soft`}`}
+      >
         <video
           src={m.url}
           className={`h-full w-full ${contain ? "object-contain" : "object-cover"}`}
@@ -166,27 +156,22 @@ function MediaTile({
           playsInline
           controls={contain}
           preload="metadata"
-          onLoadedData={() => setLoaded(true)}
         />
-      ) : (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={m.url}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          onLoad={() => setLoaded(true)}
-          className={`h-full w-full transition-opacity duration-700 ${
-            contain ? "object-contain" : "object-cover"
-          } ${loaded ? "opacity-100" : "opacity-0"}`}
-        />
-      )}
-      {m.kind === "video" && !contain && (
-        <div className="absolute right-3 bottom-3 grid h-7 w-7 place-items-center rounded-full bg-ink-900/55 text-cream-50 backdrop-blur">
-          <PlayIcon className="h-3 w-3" />
-        </div>
-      )}
-    </div>
+        {!contain ? (
+          <div className="absolute right-3 bottom-3 grid h-7 w-7 place-items-center rounded-full bg-ink-900/55 text-cream-50 backdrop-blur">
+            <PlayIcon className="h-3 w-3" />
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+  return (
+    <MediaImage
+      src={m.url}
+      eager={eager}
+      aspect={contain ? "" : aspect}
+      className={contain ? "" : "rounded-2xl frame-soft"}
+    />
   );
 }
 

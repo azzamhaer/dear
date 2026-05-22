@@ -2,7 +2,12 @@ import { ImageResponse } from "next/og";
 import { eq, inArray, asc } from "drizzle-orm";
 import { bucket, db } from "@/lib/cloudflare";
 import { albums, letters, media, memories, notes, users } from "@/db/schema";
-import { getTheme, type ShareTheme } from "@/lib/share-themes";
+import {
+  generateEmojiPlacements,
+  getTheme,
+  type EmojiPattern,
+  type ShareTheme,
+} from "@/lib/share-themes";
 
 export const runtime = "edge";
 
@@ -16,22 +21,49 @@ async function fetchMediaAsDataUrl(r2Key: string): Promise<string | null> {
     const obj = await bucket().get(r2Key);
     if (!obj) return null;
     const buf = await obj.arrayBuffer();
-    const arr = new Uint8Array(buf);
-    // btoa in chunks to avoid call-stack limits on large files
-    let bin = "";
-    const CHUNK = 0x8000;
-    for (let i = 0; i < arr.length; i += CHUNK) {
-      bin += String.fromCharCode.apply(
-        null,
-        arr.subarray(i, i + CHUNK) as unknown as number[],
-      );
+    const bytes = new Uint8Array(buf);
+    // Simple loop — reliable across runtime sizes, safe up to ~10MB
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
     }
-    const b64 = btoa(bin);
+    const b64 = btoa(binary);
     const ct = obj.httpMetadata?.contentType ?? "image/jpeg";
     return `data:${ct};base64,${b64}`;
-  } catch {
+  } catch (e) {
+    console.error("[story] fetchMedia error", e);
     return null;
   }
+}
+
+function parseEmojisParam(raw: string | null, fallback: string[]): string[] {
+  if (!raw) return fallback;
+  // Split into grapheme-aware chunks. Modern emojis can be 2-4 code units;
+  // use Intl.Segmenter if available, else fall back to splitting by `,`.
+  try {
+    const seg = new Intl.Segmenter("id", { granularity: "grapheme" });
+    const out: string[] = [];
+    for (const s of seg.segment(raw)) {
+      const g = s.segment.trim();
+      if (g) out.push(g);
+    }
+    return out.length > 0 ? out.slice(0, 6) : fallback;
+  } catch {
+    const parts = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    return parts.length > 0 ? parts.slice(0, 6) : fallback;
+  }
+}
+
+function parsePattern(raw: string | null): EmojiPattern {
+  const valid: EmojiPattern[] = [
+    "scattered",
+    "dense",
+    "diagonal",
+    "spiral",
+    "rain",
+    "edges",
+  ];
+  return valid.includes(raw as EmojiPattern) ? (raw as EmojiPattern) : "dense";
 }
 
 const W = 1080;
@@ -41,27 +73,39 @@ export async function GET(
   req: Request,
   { params }: { params: Promise<{ kind: string; id: string }> },
 ) {
-  const { kind, id } = await params;
-  const url = new URL(req.url);
-  const themeId = url.searchParams.get("theme") ?? "rose";
-  const anonymous = url.searchParams.get("anonymous") === "1";
-  const theme = getTheme(themeId);
-  const origin = `${url.protocol}//${url.host}`;
+  try {
+    const { kind, id } = await params;
+    const url = new URL(req.url);
+    const themeId = url.searchParams.get("theme") ?? "dove-rose";
+    const anonymous = url.searchParams.get("anonymous") === "1";
+    const theme = getTheme(themeId);
+    const emojis = parseEmojisParam(
+      url.searchParams.get("emojis"),
+      theme.emoji,
+    );
+    const pattern = parsePattern(url.searchParams.get("pattern"));
 
-  if (kind === "memory") {
-    return await memoryStory(id, theme, anonymous);
-  }
-  if (kind === "album") {
-    return await albumStory(id, theme, anonymous);
-  }
-  if (kind === "note") {
-    return await noteStory(id, theme, anonymous);
-  }
-  if (kind === "letter") {
-    return await letterStory(id, theme);
-  }
+    if (kind === "memory") {
+      return await memoryStory(id, theme, anonymous, emojis, pattern);
+    }
+    if (kind === "album") {
+      return await albumStory(id, theme, anonymous, emojis, pattern);
+    }
+    if (kind === "note") {
+      return await noteStory(id, theme, anonymous, emojis, pattern);
+    }
+    if (kind === "letter") {
+      return await letterStory(id, theme, emojis, pattern);
+    }
 
-  return new Response("not found", { status: 404 });
+    return new Response("not found", { status: 404 });
+  } catch (e) {
+    console.error("[story] fatal error", e);
+    return new Response(
+      `story_error: ${e instanceof Error ? e.message : "unknown"}`,
+      { status: 500 },
+    );
+  }
 }
 
 /* ============================ memory ============================ */
@@ -70,6 +114,8 @@ async function memoryStory(
   id: string,
   theme: ShareTheme,
   anonymous: boolean,
+  emojis: string[],
+  pattern: EmojiPattern,
 ) {
   const d = db();
   const [m] = await d.select().from(memories).where(eq(memories.id, id)).limit(1);
@@ -94,7 +140,7 @@ async function memoryStory(
   return new ImageResponse(
     (
       <div style={baseStyle(theme)}>
-        <Decoration theme={theme} />
+        <Decoration emojis={emojis} pattern={pattern} />
         <div
           style={{
             display: "flex",
@@ -171,6 +217,8 @@ async function albumStory(
   id: string,
   theme: ShareTheme,
   _anonymous: boolean,
+  emojis: string[],
+  pattern: EmojiPattern,
 ) {
   const d = db();
   const [a] = await d.select().from(albums).where(eq(albums.id, id)).limit(1);
@@ -204,7 +252,7 @@ async function albumStory(
   return new ImageResponse(
     (
       <div style={baseStyle(theme)}>
-        <Decoration theme={theme} />
+        <Decoration emojis={emojis} pattern={pattern} />
         <div
           style={{
             display: "flex",
@@ -303,6 +351,8 @@ async function noteStory(
   id: string,
   theme: ShareTheme,
   anonymous: boolean,
+  emojis: string[],
+  pattern: EmojiPattern,
 ) {
   const d = db();
   const [n] = await d.select().from(notes).where(eq(notes.id, id)).limit(1);
@@ -314,7 +364,7 @@ async function noteStory(
   return new ImageResponse(
     (
       <div style={baseStyle(theme)}>
-        <Decoration theme={theme} />
+        <Decoration emojis={emojis} pattern={pattern} />
         <div
           style={{
             display: "flex",
@@ -393,6 +443,8 @@ async function noteStory(
 async function letterStory(
   id: string,
   theme: ShareTheme,
+  emojis: string[],
+  pattern: EmojiPattern,
 ) {
   const d = db();
   const [l] = await d.select().from(letters).where(eq(letters.id, id)).limit(1);
@@ -406,7 +458,7 @@ async function letterStory(
   return new ImageResponse(
     (
       <div style={baseStyle(theme)}>
-        <Decoration theme={theme} />
+        <Decoration emojis={emojis} pattern={pattern} />
         <div
           style={{
             display: "flex",
@@ -473,41 +525,41 @@ function baseStyle(theme: ShareTheme): React.CSSProperties {
   };
 }
 
-function Decoration({ theme }: { theme: ShareTheme }) {
-  // Sprinkle 8 emojis in fixed-ish positions
-  const positions = [
-    { top: 80, left: 60, size: 70, rot: -8 },
-    { top: 140, right: 80, size: 56, rot: 10 },
-    { top: 380, left: 50, size: 64, rot: -6 },
-    { top: 1280, right: 70, size: 60, rot: 12 },
-    { top: 1480, left: 80, size: 56, rot: -10 },
-    { top: 1620, right: 120, size: 68, rot: 6 },
-    { top: 720, right: 60, size: 50, rot: -4 },
-    { top: 1100, left: 70, size: 54, rot: 8 },
-  ];
+function Decoration({
+  emojis,
+  pattern,
+}: {
+  emojis: string[];
+  pattern: EmojiPattern;
+}) {
+  if (emojis.length === 0) return null;
+  // Generate placements in % coords (0-100), then map to 1080x1920 pixels
+  const placements = generateEmojiPlacements(emojis, pattern, 5);
   return (
     <div
       style={{
         position: "absolute",
-        inset: 0,
+        top: 0,
+        left: 0,
+        width: 1080,
+        height: 1920,
         display: "flex",
       }}
     >
-      {positions.map((p, i) => (
+      {placements.map((p, i) => (
         <div
           key={i}
           style={{
             position: "absolute",
-            top: p.top,
-            left: (p as { left?: number }).left,
-            right: (p as { right?: number }).right,
-            fontSize: p.size,
-            opacity: 0.55,
-            transform: `rotate(${p.rot}deg)`,
+            left: (p.x / 100) * 1080,
+            top: (p.y / 100) * 1920,
+            fontSize: p.size * 2.4, // scale up for 1080x1920
+            opacity: p.opacity,
+            transform: `translate(-50%, -50%) rotate(${p.rot}deg)`,
             display: "flex",
           }}
         >
-          {theme.emoji[i % theme.emoji.length]}
+          {p.emoji}
         </div>
       ))}
     </div>

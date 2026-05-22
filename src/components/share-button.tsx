@@ -1,23 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { SHARE_THEMES, type ShareTheme } from "@/lib/share-themes";
+import {
+  PATTERNS,
+  SHARE_THEMES,
+  generateEmojiPlacements,
+  type EmojiPattern,
+  type ShareTheme,
+} from "@/lib/share-themes";
 import { toast } from "@/lib/toast";
 
 interface Props {
   kind: "memory" | "note" | "album" | "letter";
   refId: string;
-  /** Show "include comments" toggle? Only relevant for memory. */
   allowComments?: boolean;
-  /** Show IG Story option? */
   allowStory?: boolean;
   label?: string;
   className?: string;
 }
 
 type Mode = "pick" | "url" | "story";
+
+const EMOJI_SUGGESTIONS = [
+  "💗", "🩷", "🤍", "💜", "💛", "💚", "💙",
+  "🌸", "🌷", "🌻", "🌼", "🌺", "🪻",
+  "🐻", "🐰", "🐱", "🐶", "🦋", "🕊️",
+  "✨", "⭐", "🌟", "🌙", "☁️", "🌈",
+  "🧸", "🍯", "🍪", "🧁", "🍰", "🍓",
+  "☕", "🍵", "🩰", "📸", "📖", "🕯️",
+];
 
 export function ShareButton({
   kind,
@@ -53,8 +66,6 @@ export function ShareButton({
   );
 }
 
-/* ============================ modal ============================ */
-
 interface ModalProps {
   open: boolean;
   onClose: () => void;
@@ -76,9 +87,15 @@ function ShareModal({
   const [mode, setMode] = useState<Mode>("pick");
   const [anonymous, setAnonymous] = useState(false);
   const [includeComments, setIncludeComments] = useState(true);
-  const [themeId, setThemeId] = useState("rose");
+  const [themeId, setThemeId] = useState<string>("dove-rose");
+  const [pattern, setPattern] = useState<EmojiPattern>("dense");
+  const [customEmojis, setCustomEmojis] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [link, setLink] = useState<string | null>(null);
+
+  const theme = SHARE_THEMES.find((t) => t.id === themeId) ?? SHARE_THEMES[0];
+  const effectiveEmojis =
+    customEmojis.length > 0 ? customEmojis : theme.emoji;
 
   useEffect(() => setMounted(true), []);
 
@@ -93,13 +110,14 @@ function ShareModal({
 
   useEffect(() => {
     if (!open) {
-      // reset state when closed
       setMode("pick");
       setLink(null);
       setBusy(false);
       setAnonymous(false);
       setIncludeComments(true);
-      setThemeId("rose");
+      setThemeId("dove-rose");
+      setPattern("dense");
+      setCustomEmojis([]);
     }
   }, [open]);
 
@@ -115,6 +133,8 @@ function ShareModal({
           anonymous,
           includeComments: allowComments ? includeComments : false,
           theme: themeId,
+          emojis: customEmojis.length > 0 ? customEmojis : undefined,
+          pattern,
         }),
       });
       if (!res.ok) throw new Error("create_failed");
@@ -148,11 +168,16 @@ function ShareModal({
       const params = new URLSearchParams({
         theme: themeId,
         anonymous: anonymous ? "1" : "0",
+        pattern,
       });
+      if (customEmojis.length > 0) {
+        params.set("emojis", customEmojis.join(""));
+      }
       const url = `/api/story/${kind}/${refId}?${params}`;
       const res = await fetch(url);
-      if (!res.ok) throw new Error("story_failed");
+      if (!res.ok) throw new Error(`story_failed_${res.status}`);
       const blob = await res.blob();
+      if (blob.size === 0) throw new Error("empty_blob");
       const objectUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = objectUrl;
@@ -162,11 +187,20 @@ function ShareModal({
       a.remove();
       URL.revokeObjectURL(objectUrl);
       toast.success("Gambar tersimpan. Unggah ke story Instagram-mu.");
-    } catch {
-      toast.error("Gambar belum bisa dibuat. Coba lagi.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "unknown";
+      toast.error(`Gambar belum bisa dibuat (${msg}).`);
     } finally {
       setBusy(false);
     }
+  }
+
+  function toggleEmoji(emoji: string) {
+    setCustomEmojis((prev) => {
+      if (prev.includes(emoji)) return prev.filter((e) => e !== emoji);
+      if (prev.length >= 6) return prev;
+      return [...prev, emoji];
+    });
   }
 
   if (!mounted) return null;
@@ -192,7 +226,6 @@ function ShareModal({
             onClick={(e) => e.stopPropagation()}
             className="glass-strong relative w-full max-w-md overflow-hidden rounded-t-3xl shadow-soft sm:rounded-3xl"
           >
-            {/* Header */}
             <header className="flex items-center justify-between border-b border-ink-900/5 px-5 py-4">
               <div className="flex items-center gap-2">
                 {mode !== "pick" ? (
@@ -229,7 +262,6 @@ function ShareModal({
               </button>
             </header>
 
-            {/* Body */}
             <div className="max-h-[72vh] overflow-y-auto">
               {mode === "pick" ? (
                 <ModePicker
@@ -237,29 +269,29 @@ function ShareModal({
                   onPickUrl={() => setMode("url")}
                   onPickStory={() => setMode("story")}
                 />
-              ) : mode === "url" ? (
-                <UrlConfig
+              ) : (
+                <Configurator
+                  mode={mode}
                   allowComments={allowComments}
                   anonymous={anonymous}
                   onAnonymous={setAnonymous}
                   includeComments={includeComments}
                   onIncludeComments={setIncludeComments}
+                  theme={theme}
                   themeId={themeId}
                   onTheme={setThemeId}
+                  pattern={pattern}
+                  onPattern={setPattern}
+                  customEmojis={customEmojis}
+                  onToggleEmoji={toggleEmoji}
+                  onClearEmojis={() => setCustomEmojis([])}
+                  effectiveEmojis={effectiveEmojis}
                   link={link}
                   onCopy={copyAgain}
-                />
-              ) : (
-                <StoryConfig
-                  anonymous={anonymous}
-                  onAnonymous={setAnonymous}
-                  themeId={themeId}
-                  onTheme={setThemeId}
                 />
               )}
             </div>
 
-            {/* Footer actions */}
             {mode !== "pick" ? (
               <footer className="flex items-center justify-end gap-2 border-t border-ink-900/5 px-5 py-4 sm:px-6">
                 <button
@@ -279,9 +311,15 @@ function ShareModal({
                       <span>Sebentar…</span>
                     </>
                   ) : mode === "url" ? (
-                    <span>{link ? "Perbarui link" : "Buat link"}</span>
+                    <>
+                      <LinkIcon className="h-3.5 w-3.5" />
+                      <span>{link ? "Perbarui link" : "Buat link"}</span>
+                    </>
                   ) : (
-                    <span>Unduh gambar</span>
+                    <>
+                      <DownloadIcon className="h-3.5 w-3.5" />
+                      <span>Unduh gambar</span>
+                    </>
                   )}
                 </button>
               </footer>
@@ -294,8 +332,6 @@ function ShareModal({
 
   return createPortal(content, document.body);
 }
-
-/* ============================ step 1: mode picker ============================ */
 
 function ModePicker({
   allowStory,
@@ -312,8 +348,8 @@ function ModePicker({
         onClick={onPickUrl}
         className="group flex w-full items-center gap-4 rounded-2xl border border-ink-900/10 bg-cream-50 p-4 text-left transition hover:bg-rose-mist/30"
       >
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-rose-blush to-rose-dusty text-2xl shadow-soft">
-          🔗
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-rose-blush to-rose-dusty text-cream-50 shadow-soft">
+          <LinkIcon className="h-5 w-5" />
         </div>
         <div className="flex-1">
           <div className="font-display text-lg italic text-ink-900">
@@ -331,8 +367,8 @@ function ModePicker({
           onClick={onPickStory}
           className="group flex w-full items-center gap-4 rounded-2xl border border-ink-900/10 bg-cream-50 p-4 text-left transition hover:bg-rose-mist/30"
         >
-          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-sand-200 to-rose-blush text-2xl shadow-soft">
-            📸
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-sand-200 to-rose-blush text-ink-900 shadow-soft">
+            <CameraIcon className="h-5 w-5" />
           </div>
           <div className="flex-1">
             <div className="font-display text-lg italic text-ink-900">
@@ -349,38 +385,63 @@ function ModePicker({
   );
 }
 
-/* ============================ step 2: url config ============================ */
-
-function UrlConfig({
+function Configurator({
+  mode,
   allowComments,
   anonymous,
   onAnonymous,
   includeComments,
   onIncludeComments,
+  theme,
   themeId,
   onTheme,
+  pattern,
+  onPattern,
+  customEmojis,
+  onToggleEmoji,
+  onClearEmojis,
+  effectiveEmojis,
   link,
   onCopy,
 }: {
+  mode: "url" | "story";
   allowComments: boolean;
   anonymous: boolean;
   onAnonymous: (v: boolean) => void;
   includeComments: boolean;
   onIncludeComments: (v: boolean) => void;
+  theme: ShareTheme;
   themeId: string;
   onTheme: (id: string) => void;
+  pattern: EmojiPattern;
+  onPattern: (p: EmojiPattern) => void;
+  customEmojis: string[];
+  onToggleEmoji: (emoji: string) => void;
+  onClearEmojis: () => void;
+  effectiveEmojis: string[];
   link: string | null;
   onCopy: () => void;
 }) {
   return (
     <div className="space-y-5 p-5 sm:p-6">
+      <ThemePreview
+        theme={theme}
+        emojis={effectiveEmojis}
+        pattern={pattern}
+        aspectRatio={mode === "story" ? "9 / 16" : "16 / 10"}
+      />
+
       <ToggleRow
         label="Sembunyikan nama"
-        sublabel="Tampil sebagai “Anonim” di halaman publik."
+        sublabel={
+          mode === "url"
+            ? "Tampil sebagai “Anonim” di halaman publik."
+            : "Footer gambar pakai “seseorang yang sayang”."
+        }
         checked={anonymous}
         onChange={onAnonymous}
       />
-      {allowComments ? (
+      {mode === "url" && allowComments ? (
         <ToggleRow
           label="Sertakan komentar"
           sublabel="Tampilkan percakapan kalian di halaman publik."
@@ -389,9 +450,96 @@ function UrlConfig({
         />
       ) : null}
 
-      <ThemePicker themeId={themeId} onTheme={onTheme} />
+      <Section title="Tema warna">
+        <div className="grid grid-cols-4 gap-2">
+          {SHARE_THEMES.map((t) => (
+            <ThemeChip
+              key={t.id}
+              theme={t}
+              selected={t.id === themeId}
+              onClick={() => onTheme(t.id)}
+            />
+          ))}
+        </div>
+      </Section>
 
-      {link ? (
+      <Section title="Pola taburan emoji">
+        <div className="grid grid-cols-3 gap-2">
+          {PATTERNS.map((p) => (
+            <PatternChip
+              key={p.id}
+              pattern={p.id}
+              label={p.label}
+              selected={p.id === pattern}
+              onClick={() => onPattern(p.id)}
+            />
+          ))}
+        </div>
+      </Section>
+
+      <Section
+        title="Emoji custom"
+        right={
+          customEmojis.length > 0 ? (
+            <button
+              onClick={onClearEmojis}
+              className="text-[11px] text-ink-400 underline hover:text-ink-700"
+            >
+              Pakai bawaan tema
+            </button>
+          ) : (
+            <span className="text-[11px] text-ink-400">
+              Opsional — pilih 1-6
+            </span>
+          )
+        }
+      >
+        <div className="rounded-2xl border border-ink-900/10 bg-cream-50 p-3">
+          <div className="mb-2 flex items-center justify-between text-[11px] text-ink-400">
+            <span>
+              {customEmojis.length === 0 ? "Pakai bawaan tema:" : "Pilihanmu:"}
+            </span>
+            <span>{customEmojis.length}/6</span>
+          </div>
+          <div className="mb-3 flex min-h-[28px] flex-wrap gap-1.5">
+            {(customEmojis.length > 0 ? customEmojis : theme.emoji).map(
+              (e, i) => (
+                <span
+                  key={i}
+                  className="rounded-full bg-cream-100/80 px-2 py-0.5 text-base"
+                >
+                  {e}
+                </span>
+              ),
+            )}
+          </div>
+          <div className="grid grid-cols-8 gap-1">
+            {EMOJI_SUGGESTIONS.map((emoji) => {
+              const selected = customEmojis.includes(emoji);
+              const disabled = !selected && customEmojis.length >= 6;
+              return (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => onToggleEmoji(emoji)}
+                  disabled={disabled}
+                  className={`grid aspect-square place-items-center rounded-lg text-base transition ${
+                    selected
+                      ? "bg-rose-dusty/50 ring-2 ring-rose-dusty"
+                      : disabled
+                        ? "opacity-30"
+                        : "hover:bg-rose-mist/40"
+                  }`}
+                >
+                  {emoji}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </Section>
+
+      {mode === "url" && link ? (
         <div className="space-y-2 rounded-2xl bg-rose-mist/40 px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="text-xs uppercase tracking-wider text-ink-700">
@@ -408,51 +556,46 @@ function UrlConfig({
             />
             <button
               onClick={onCopy}
-              className="rounded-xl bg-ink-900 px-3 py-2 text-xs font-medium text-cream-50"
+              className="rounded-xl bg-ink-900 p-2 text-cream-50"
+              aria-label="Salin"
             >
-              Salin
+              <CopyIcon className="h-3.5 w-3.5" />
             </button>
           </div>
-          <p className="text-[11px] text-ink-500">
-            Bisa dibuka tanpa login. Anda bisa hapus link kapan saja.
-          </p>
         </div>
+      ) : null}
+
+      {mode === "story" ? (
+        <p className="rounded-2xl bg-cream-100/80 px-4 py-3 text-xs text-ink-500">
+          Gambar akan diunduh sebagai PNG 1080×1920. Buka Instagram → Story
+          baru → pilih dari galeri.
+        </p>
       ) : null}
     </div>
   );
 }
 
-/* ============================ step 2: story config ============================ */
-
-function StoryConfig({
-  anonymous,
-  onAnonymous,
-  themeId,
-  onTheme,
+function Section({
+  title,
+  right,
+  children,
 }: {
-  anonymous: boolean;
-  onAnonymous: (v: boolean) => void;
-  themeId: string;
-  onTheme: (id: string) => void;
+  title: string;
+  right?: React.ReactNode;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-5 p-5 sm:p-6">
-      <ToggleRow
-        label="Sembunyikan nama"
-        sublabel="Footer gambar memakai “seseorang yang sayang”."
-        checked={anonymous}
-        onChange={onAnonymous}
-      />
-      <ThemePicker themeId={themeId} onTheme={onTheme} large />
-      <p className="rounded-2xl bg-cream-100/80 px-4 py-3 text-xs text-ink-500">
-        Gambar akan diunduh sebagai file PNG 1080×1920. Buka Instagram → buat
-        Story baru → pilih dari galerimu.
-      </p>
+    <div>
+      <div className="mb-2 flex items-baseline justify-between">
+        <div className="text-xs uppercase tracking-wider text-ink-400">
+          {title}
+        </div>
+        {right}
+      </div>
+      {children}
     </div>
   );
 }
-
-/* ============================ shared subcomponents ============================ */
 
 function ToggleRow({
   label,
@@ -491,88 +634,140 @@ function ToggleRow({
   );
 }
 
-function ThemePicker({
-  themeId,
-  onTheme,
-  large = false,
-}: {
-  themeId: string;
-  onTheme: (id: string) => void;
-  large?: boolean;
-}) {
-  return (
-    <div>
-      <div className="mb-2 flex items-baseline justify-between">
-        <div className="text-xs uppercase tracking-wider text-ink-400">
-          Tema tampilan
-        </div>
-        <div className="text-[10px] text-ink-400">
-          {SHARE_THEMES.find((t) => t.id === themeId)?.label}
-        </div>
-      </div>
-      <div className="grid grid-cols-4 gap-2">
-        {SHARE_THEMES.map((t) => (
-          <ThemeChip
-            key={t.id}
-            theme={t}
-            selected={t.id === themeId}
-            onClick={() => onTheme(t.id)}
-            large={large}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function ThemeChip({
   theme,
   selected,
   onClick,
-  large,
 }: {
   theme: ShareTheme;
   selected: boolean;
   onClick: () => void;
-  large: boolean;
 }) {
   return (
     <button
       onClick={onClick}
       aria-label={theme.label}
       aria-pressed={selected}
+      title={theme.label}
       className={`relative overflow-hidden rounded-2xl transition ${
         selected
-          ? "ring-2 ring-rose-dusty shadow-soft scale-[1.03]"
+          ? "ring-2 ring-rose-dusty shadow-soft scale-[1.04]"
           : "ring-1 ring-ink-900/5 opacity-90 hover:opacity-100 hover:scale-[1.02]"
       }`}
       style={{
         background: theme.bg,
-        aspectRatio: large ? "9 / 16" : "1 / 1",
+        aspectRatio: "1 / 1",
       }}
     >
-      {/* Decorative emoji preview */}
-      <span
-        className="absolute right-1 top-1 text-xs"
-        style={{ opacity: 0.7 }}
-      >
-        {theme.emoji[0]}
-      </span>
-      <span
-        className="absolute bottom-1 left-1 text-xs"
-        style={{ opacity: 0.6 }}
-      >
-        {theme.emoji[1]}
-      </span>
       {selected ? (
-        <span
-          className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-900/40 to-transparent py-1 text-center text-[9px] uppercase tracking-wider"
-          style={{ color: theme.wrapperClass.includes("cream") ? "#FBF7F1" : "#FFFCF6" }}
-        >
-          dipilih
+        <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-900/35 to-transparent py-1 text-center text-[9px] uppercase tracking-wider text-cream-50">
+          ✓
         </span>
       ) : null}
     </button>
+  );
+}
+
+function PatternChip({
+  pattern,
+  label,
+  selected,
+  onClick,
+}: {
+  pattern: EmojiPattern;
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  const dots = useMemo(
+    () =>
+      generateEmojiPlacements(["•", "•", "•", "•"], pattern, 2).slice(0, 22),
+    [pattern],
+  );
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`relative overflow-hidden rounded-2xl border bg-cream-50 p-2 text-left transition ${
+        selected
+          ? "border-rose-dusty shadow-soft"
+          : "border-ink-900/10 hover:bg-cream-100/80"
+      }`}
+    >
+      <div className="relative h-14 overflow-hidden rounded-xl bg-rose-mist/30">
+        {dots.map((d, i) => (
+          <span
+            key={i}
+            style={{
+              position: "absolute",
+              left: `${d.x}%`,
+              top: `${d.y}%`,
+              fontSize: 8 + d.size * 0.3,
+              opacity: d.opacity,
+              color: "#D4A5A5",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            ●
+          </span>
+        ))}
+      </div>
+      <div className="mt-1 text-center text-[11px] font-medium text-ink-700">
+        {label}
+      </div>
+    </button>
+  );
+}
+
+function ThemePreview({
+  theme,
+  emojis,
+  pattern,
+  aspectRatio,
+}: {
+  theme: ShareTheme;
+  emojis: string[];
+  pattern: EmojiPattern;
+  aspectRatio: string;
+}) {
+  const placements = useMemo(
+    () => generateEmojiPlacements(emojis, pattern, 3),
+    [emojis, pattern],
+  );
+  return (
+    <div
+      className="relative w-full overflow-hidden rounded-3xl ring-1 ring-ink-900/5"
+      style={{ background: theme.bg, aspectRatio }}
+    >
+      <div className="pointer-events-none absolute inset-0">
+        {placements.map((p, i) => (
+          <span
+            key={i}
+            style={{
+              position: "absolute",
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              fontSize: p.size * 0.6,
+              opacity: p.opacity,
+              transform: `translate(-50%, -50%) rotate(${p.rot}deg)`,
+            }}
+          >
+            {p.emoji}
+          </span>
+        ))}
+      </div>
+      <div className="absolute inset-0 grid place-items-center p-6">
+        <div
+          className="rounded-2xl px-4 py-3 backdrop-blur-md"
+          style={{ background: theme.cardBg, color: theme.storyText }}
+        >
+          <div className="font-display text-base italic">
+            Dear<span style={{ color: theme.accent }}>.</span>
+          </div>
+          <div className="text-[10px] opacity-70">preview</div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -615,6 +810,43 @@ function SpinnerIcon({ className }: { className?: string }) {
     <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
       <path d="M12 3a9 9 0 0 1 9 9" opacity="0.9" />
       <path d="M12 3a9 9 0 0 0 0 18" opacity="0.25" />
+    </svg>
+  );
+}
+
+function LinkIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 1 0-7.07-7.07L11 6" />
+      <path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 1 0 7.07 7.07L13 18" />
+    </svg>
+  );
+}
+
+function CameraIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 8h2l2-3h6l2 3h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </svg>
+  );
+}
+
+function DownloadIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 4v12" />
+      <path d="M7 11l5 5 5-5" />
+      <path d="M4 20h16" />
+    </svg>
+  );
+}
+
+function CopyIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15V5a2 2 0 0 1 2-2h10" />
     </svg>
   );
 }

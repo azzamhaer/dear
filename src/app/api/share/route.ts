@@ -43,6 +43,8 @@ export async function POST(req: NextRequest) {
         anonymous?: boolean;
         includeComments?: boolean;
         theme?: string;
+        emojis?: string[];
+        pattern?: string;
         expiresInDays?: number;
       }
     | null;
@@ -61,10 +63,27 @@ export async function POST(req: NextRequest) {
     .where(eq(shares.refId, body.refId))
     .limit(1);
 
+  const emojis = Array.isArray(body.emojis)
+    ? body.emojis.filter((e) => typeof e === "string").slice(0, 6)
+    : undefined;
+  const validPatterns = new Set([
+    "scattered",
+    "dense",
+    "diagonal",
+    "spiral",
+    "rain",
+    "edges",
+  ]);
+  const pattern = validPatterns.has(body.pattern ?? "")
+    ? body.pattern
+    : "dense";
+
   const options = JSON.stringify({
     anonymous: !!body.anonymous,
     includeComments: !!body.includeComments,
-    theme: body.theme ?? "rose",
+    theme: body.theme ?? "dove-rose",
+    emojis,
+    pattern,
   });
 
   const expiresAt = body.expiresInDays

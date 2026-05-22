@@ -81,7 +81,12 @@ export default async function SharePage({
   if (!content) notFound();
 
   return (
-    <ShareView theme={theme} kind={share.kind} shareId={share.id}>
+    <ShareView
+      theme={theme}
+      kind={share.kind}
+      shareId={share.id}
+      options={options}
+    >
       {content}
     </ShareView>
   );
