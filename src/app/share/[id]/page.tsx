@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { eq, inArray, asc } from "drizzle-orm";
 import { db } from "@/lib/cloudflare";
 import {
@@ -18,6 +19,22 @@ import type { Metadata } from "next";
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
+/** Build an absolute URL from the current request's host. WhatsApp / iMessage
+ *  / Twitter unfurlers require absolute https URLs in og:image. */
+async function absoluteUrl(path: string): Promise<string> {
+  const h = await headers();
+  const host =
+    h.get("x-forwarded-host") ?? h.get("host") ?? "dear.web.id";
+  const proto = h.get("x-forwarded-proto") ?? "https";
+  return `${proto}://${host}${path}`;
+}
+
+function truncate(s: string, max: number): string {
+  const t = s.trim().replace(/\s+/g, " ");
+  if (t.length <= max) return t;
+  return t.slice(0, max - 1).trimEnd() + "…";
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -26,11 +43,122 @@ export async function generateMetadata({
   const { id } = await params;
   const d = db();
   const [share] = await d.select().from(shares).where(eq(shares.id, id)).limit(1);
-  if (!share) return { title: "Tidak ditemukan · Dear" };
+  if (!share) {
+    return {
+      title: "Tidak ditemukan · Dear",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  let title = "Sebuah kenangan dari Dear";
+  let description = "Dibagikan dari Dear — kenangan kita berdua.";
+  let ogImage: string | null = null;
+
+  try {
+    if (share.kind === "memory") {
+      const [m] = await d
+        .select()
+        .from(memories)
+        .where(eq(memories.id, share.refId))
+        .limit(1);
+      if (m?.caption) {
+        title = truncate(m.caption, 70);
+        description = truncate(m.caption, 180);
+      }
+      const [firstMedia] = await d
+        .select()
+        .from(media)
+        .where(eq(media.memoryId, share.refId))
+        .orderBy(media.position)
+        .limit(1);
+      if (firstMedia) {
+        ogImage = await absoluteUrl(
+          `/api/share-public/${share.id}/${firstMedia.r2Key}`,
+        );
+      }
+    } else if (share.kind === "note") {
+      const [n] = await d
+        .select()
+        .from(notes)
+        .where(eq(notes.id, share.refId))
+        .limit(1);
+      if (n?.title) title = truncate(n.title, 70);
+      if (n?.body) description = truncate(n.body, 180);
+    } else if (share.kind === "album") {
+      const [a] = await d
+        .select()
+        .from(albums)
+        .where(eq(albums.id, share.refId))
+        .limit(1);
+      if (a?.name) title = truncate(a.name, 70);
+      if (a?.description) description = truncate(a.description, 180);
+      const [firstMem] = await d
+        .select()
+        .from(memories)
+        .where(eq(memories.albumId, share.refId))
+        .orderBy(asc(memories.memoryDate))
+        .limit(1);
+      if (firstMem) {
+        const [coverMedia] = await d
+          .select()
+          .from(media)
+          .where(eq(media.memoryId, firstMem.id))
+          .orderBy(media.position)
+          .limit(1);
+        if (coverMedia) {
+          ogImage = await absoluteUrl(
+            `/api/share-public/${share.id}/${coverMedia.r2Key}`,
+          );
+        }
+      }
+    } else if (share.kind === "letter") {
+      const [l] = await d
+        .select()
+        .from(letters)
+        .where(eq(letters.id, share.refId))
+        .limit(1);
+      if (l?.title) title = truncate(l.title, 70);
+      const unlockMs =
+        l?.unlocksAt instanceof Date
+          ? l.unlocksAt.getTime()
+          : ((l?.unlocksAt as unknown as number) ?? 0) * 1000;
+      const locked = unlockMs > Date.now();
+      description = locked
+        ? "Surat masa depan — masih tertutup."
+        : truncate(l?.body ?? description, 180);
+    }
+  } catch {
+    // ignore -- use defaults
+  }
+
+  const url = await absoluteUrl(`/share/${share.id}`);
+
   return {
-    title: "Sebuah kenangan dari Dear",
-    description: "Dibagikan dari Dear — kenangan kita berdua.",
+    title,
+    description,
     robots: { index: false, follow: false },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "Dear",
+      type: "article",
+      locale: "id_ID",
+      images: ogImage
+        ? [
+            {
+              url: ogImage,
+              alt: title,
+            },
+          ]
+        : undefined,
+    },
+    twitter: {
+      card: ogImage ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: ogImage ? [ogImage] : undefined,
+    },
   };
 }
 
@@ -45,7 +173,6 @@ export default async function SharePage({
   const [share] = await d.select().from(shares).where(eq(shares.id, id)).limit(1);
   if (!share) notFound();
 
-  // Check expiry
   if (share.expiresAt) {
     const exp =
       share.expiresAt instanceof Date
@@ -56,7 +183,6 @@ export default async function SharePage({
     }
   }
 
-  // Increment view count (best-effort)
   await d
     .update(shares)
     .set({ viewCount: share.viewCount + 1 })
@@ -114,8 +240,8 @@ async function renderMemory(
         .where(eq(users.id, m.authorId))
         .limit(1);
 
-  let commentRows: typeof comments.$inferSelect[] = [];
-  let commenters: typeof users.$inferSelect[] = [];
+  let commentRows: (typeof comments.$inferSelect)[] = [];
+  let commenters: (typeof users.$inferSelect)[] = [];
   if (options.includeComments) {
     commentRows = await d
       .select()
@@ -147,9 +273,7 @@ async function renderMemory(
         authorName: options.anonymous
           ? "Seseorang"
           : commenter?.displayName ?? "—",
-        authorAvatar: options.anonymous
-          ? null
-          : commenter?.avatarUrl ?? null,
+        authorAvatar: options.anonymous ? null : commenter?.avatarUrl ?? null,
       };
     }),
   };
@@ -174,7 +298,7 @@ async function renderNote(
 
 async function renderAlbum(
   refId: string,
-  options: ReturnType<typeof parseOptions>,
+  _options: ReturnType<typeof parseOptions>,
 ) {
   const d = db();
   const [a] = await d.select().from(albums).where(eq(albums.id, refId)).limit(1);
@@ -192,8 +316,8 @@ async function renderAlbum(
       .from(media)
       .where(inArray(media.memoryId, memIds))
       .orderBy(media.position);
-    for (const m of mediaRows) {
-      if (!mediaByMem.has(m.memoryId)) mediaByMem.set(m.memoryId, m.r2Key);
+    for (const mm of mediaRows) {
+      if (!mediaByMem.has(mm.memoryId)) mediaByMem.set(mm.memoryId, mm.r2Key);
     }
   }
   return {
@@ -235,7 +359,7 @@ function ExpiredPage() {
   return (
     <div className="grid min-h-dvh place-items-center bg-cream-50 px-6">
       <div className="text-center">
-        <div className="text-6xl">🥀</div>
+        <div className="text-6xl">{"\u{1F940}"}</div>
         <h1 className="mt-4 font-display text-3xl italic">Link sudah layu.</h1>
         <p className="mt-2 text-ink-500">
           Tautan ini sudah lewat masanya. Mintalah link baru kalau perlu.

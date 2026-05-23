@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { type ShareTheme, type ShareOptions } from "@/lib/share-themes";
 import { formatWibDisplay } from "@/lib/wib";
 import { formatRelative } from "@/lib/utils";
 import { EmojiBackdrop } from "@/components/emoji-backdrop";
 import { MediaImage } from "@/components/media-image";
+import { Lightbox } from "@/components/lightbox";
 
 interface SharedMemory {
   type: "memory";
@@ -47,11 +49,7 @@ interface SharedLetter {
   author: { displayName: string } | null;
 }
 
-type SharedContent =
-  | SharedMemory
-  | SharedNote
-  | SharedAlbum
-  | SharedLetter;
+type SharedContent = SharedMemory | SharedNote | SharedAlbum | SharedLetter;
 
 interface Props {
   theme: ShareTheme;
@@ -62,9 +60,8 @@ interface Props {
 }
 
 export function ShareView({ theme, shareId, options, children }: Props) {
-  const emojis = options.emojis && options.emojis.length > 0
-    ? options.emojis
-    : theme.emoji;
+  const emojis =
+    options.emojis && options.emojis.length > 0 ? options.emojis : theme.emoji;
   const pattern = options.pattern ?? "scattered";
 
   return (
@@ -72,11 +69,9 @@ export function ShareView({ theme, shareId, options, children }: Props) {
       className={`relative min-h-dvh ${theme.wrapperClass}`}
       style={{ background: theme.bg }}
     >
-      {/* Floating decorative emojis — dense pattern */}
       <EmojiBackdrop emojis={emojis} pattern={pattern} />
 
       <div className="relative mx-auto max-w-2xl px-4 py-8 sm:py-12">
-        {/* Top brand — minimal, no "dibagikan" badge */}
         <header className="mb-6 flex items-center justify-center">
           <Link
             href="/"
@@ -89,7 +84,6 @@ export function ShareView({ theme, shareId, options, children }: Props) {
           </Link>
         </header>
 
-        {/* Content */}
         {children.type === "memory" ? (
           <MemoryView data={children} theme={theme} shareId={shareId} />
         ) : children.type === "note" ? (
@@ -104,8 +98,8 @@ export function ShareView({ theme, shareId, options, children }: Props) {
   );
 }
 
-/** Rewrite a privately-served avatar URL to the public avatar proxy
- *  so anonymous viewers don't get 401'd. */
+/** Rewrite a privately-served avatar URL to the public avatar proxy so
+ *  anonymous viewers don't get 401'd. */
 function publicAvatar(src: string | null): string | null {
   if (!src) return src;
   if (src.startsWith("/api/media/")) {
@@ -134,6 +128,16 @@ function MemoryView({
             : data.memory.memoryDate,
         );
 
+  const [lightbox, setLightbox] = useState<{ open: boolean; index: number }>({
+    open: false,
+    index: 0,
+  });
+
+  const lightboxImages = data.media.map((m) => ({
+    url: `/api/share-public/${shareId}/${m.r2Key}`,
+    kind: (m.kind === "video" ? "video" : "image") as "image" | "video",
+  }));
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}
@@ -142,7 +146,6 @@ function MemoryView({
       className="overflow-hidden rounded-3xl pb-5 shadow-xl sm:pb-6"
       style={{ background: theme.cardBg, backdropFilter: "blur(20px)" }}
     >
-      {/* Author + date strip (compact, like Instagram) */}
       <header className="flex items-center gap-3 px-5 pt-5 sm:px-6">
         {data.author ? (
           <>
@@ -162,7 +165,7 @@ function MemoryView({
               className="grid h-9 w-9 place-items-center rounded-full text-base"
               style={{ background: theme.accent + "30", color: theme.accent }}
             >
-              🤍
+              {"\u{1F90D}"}
             </div>
             <div className="leading-tight">
               <div className="text-sm font-medium">Anonim</div>
@@ -172,7 +175,6 @@ function MemoryView({
         )}
       </header>
 
-      {/* Caption as the headline — big italic serif sitting ABOVE the photo */}
       {data.memory.caption ? (
         <h1 className="px-5 pt-4 font-display text-[26px] italic leading-[1.15] sm:px-6 sm:text-[32px]">
           {data.memory.caption}
@@ -180,7 +182,8 @@ function MemoryView({
       ) : null}
       {data.memory.location ? (
         <p className="px-5 pt-2 text-xs opacity-60 sm:px-6">
-          <span style={{ color: theme.accent }}>◆</span> {data.memory.location}
+          <span style={{ color: theme.accent }}>{"◆"}</span>{" "}
+          {data.memory.location}
         </p>
       ) : null}
 
@@ -202,8 +205,9 @@ function MemoryView({
                   <MediaImage
                     src={`/api/share-public/${shareId}/${m.r2Key}`}
                     aspect="aspect-[4/5]"
-                    className="rounded-2xl"
+                    className="cursor-zoom-in rounded-2xl"
                     eager={i <= 1}
+                    onClick={() => setLightbox({ open: true, index: i })}
                   />
                 )}
               </div>
@@ -211,7 +215,8 @@ function MemoryView({
           </div>
           {data.media.length > 1 ? (
             <div className="mt-2 text-center text-xs opacity-60">
-              ← geser untuk melihat semua ({data.media.length}) →
+              {"←"} geser untuk melihat semua ({data.media.length}){" "}
+              {"→"}
             </div>
           ) : null}
         </div>
@@ -243,16 +248,13 @@ function MemoryView({
                   <div
                     className="flex-1 rounded-2xl px-3.5 py-2"
                     style={{
-                      background:
-                        theme.wrapperClass.includes("cream")
-                          ? "rgba(255,255,255,0.08)"
-                          : "rgba(31,26,23,0.05)",
+                      background: theme.wrapperClass.includes("cream")
+                        ? "rgba(255,255,255,0.08)"
+                        : "rgba(31,26,23,0.05)",
                     }}
                   >
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="text-xs font-medium">
-                        {c.authorName}
-                      </span>
+                      <span className="text-xs font-medium">{c.authorName}</span>
                       <span className="text-[10px] opacity-50">
                         {formatRelative(dt)}
                       </span>
@@ -267,6 +269,13 @@ function MemoryView({
           </ul>
         </div>
       ) : null}
+
+      <Lightbox
+        open={lightbox.open}
+        images={lightboxImages}
+        startIndex={lightbox.index}
+        onClose={() => setLightbox((s) => ({ ...s, open: false }))}
+      />
     </motion.article>
   );
 }
@@ -293,7 +302,7 @@ function NoteView({ data, theme }: { data: SharedNote; theme: ShareTheme }) {
         )}
       </p>
       <p className="mt-6 border-t border-current/10 pt-4 text-right text-sm italic opacity-70">
-        — {data.author?.displayName ?? "Anonim"}
+        {"—"} {data.author?.displayName ?? "Anonim"}
       </p>
     </motion.article>
   );
@@ -310,6 +319,18 @@ function AlbumView({
   theme: ShareTheme;
   shareId: string;
 }) {
+  const [lightbox, setLightbox] = useState<{ open: boolean; index: number }>({
+    open: false,
+    index: 0,
+  });
+
+  const lightboxImages = data.memories
+    .filter((m) => m.coverKey)
+    .map((m) => ({
+      url: `/api/share-public/${shareId}/${m.coverKey}`,
+      kind: "image" as const,
+    }));
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}
@@ -332,29 +353,47 @@ function AlbumView({
 
       {data.memories.length > 0 ? (
         <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
-          {data.memories.map((m, i) =>
-            m.coverKey ? (
-              <MediaImage
-                key={m.id}
-                src={`/api/share-public/${shareId}/${m.coverKey}`}
-                aspect="aspect-square"
-                className="rounded-xl"
-                eager={i < 6}
-              />
-            ) : (
-              <div
-                key={m.id}
-                className="grid aspect-square place-items-center rounded-xl text-2xl"
-                style={{ background: theme.accent + "20" }}
-              >
-                🌸
-              </div>
-            ),
-          )}
+          {(() => {
+            let lbIdx = -1;
+            return data.memories.map((m, i) => {
+              if (m.coverKey) {
+                lbIdx += 1;
+                const myIndex = lbIdx;
+                return (
+                  <MediaImage
+                    key={m.id}
+                    src={`/api/share-public/${shareId}/${m.coverKey}`}
+                    aspect="aspect-square"
+                    className="cursor-zoom-in rounded-xl"
+                    eager={i < 6}
+                    onClick={() =>
+                      setLightbox({ open: true, index: myIndex })
+                    }
+                  />
+                );
+              }
+              return (
+                <div
+                  key={m.id}
+                  className="grid aspect-square place-items-center rounded-xl text-2xl"
+                  style={{ background: theme.accent + "20" }}
+                >
+                  {"\u{1F338}"}
+                </div>
+              );
+            });
+          })()}
         </div>
       ) : (
         <p className="text-center text-sm opacity-60">Album masih kosong.</p>
       )}
+
+      <Lightbox
+        open={lightbox.open}
+        images={lightboxImages}
+        startIndex={lightbox.index}
+        onClose={() => setLightbox((s) => ({ ...s, open: false }))}
+      />
     </motion.article>
   );
 }
@@ -372,10 +411,13 @@ function LetterView({ data, theme }: { data: SharedLetter; theme: ShareTheme }) 
     >
       {data.locked ? (
         <div className="text-center">
-          <div className="mb-4 text-5xl">🔒</div>
-          <h1 className="font-display text-3xl italic">Surat ini masih tertutup.</h1>
+          <div className="mb-4 text-5xl">{"\u{1F512}"}</div>
+          <h1 className="font-display text-3xl italic">
+            Surat ini masih tertutup.
+          </h1>
           <p className="mx-auto mt-3 max-w-sm text-sm opacity-70">
-            Akan terbuka pada {new Date(data.unlocksAt).toLocaleDateString("id-ID", {
+            Akan terbuka pada{" "}
+            {new Date(data.unlocksAt).toLocaleDateString("id-ID", {
               weekday: "long",
               day: "numeric",
               month: "long",
@@ -395,7 +437,7 @@ function LetterView({ data, theme }: { data: SharedLetter; theme: ShareTheme }) 
             {data.letter.body}
           </p>
           <p className="mt-6 border-t border-current/10 pt-4 text-right text-sm italic opacity-70">
-            — {data.author?.displayName ?? "Anonim"}
+            {"—"} {data.author?.displayName ?? "Anonim"}
           </p>
         </>
       )}
@@ -436,4 +478,3 @@ function AvatarOrInitial({
     </div>
   );
 }
-

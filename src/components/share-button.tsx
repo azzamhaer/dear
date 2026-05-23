@@ -584,9 +584,11 @@ function PatternChip({
   selected: boolean;
   onClick: () => void;
 }) {
+  // Render every placement at a small scale — no slicing — so the shape of
+  // the pattern (frame, rain columns, diagonal lines, spiral, etc.) is
+  // recognizable and matches the larger live preview.
   const dots = useMemo(
-    () =>
-      generateEmojiPlacements(["•", "•", "•", "•"], pattern, 2).slice(0, 22),
+    () => generateEmojiPlacements(["•"], pattern, 3),
     [pattern],
   );
   return (
@@ -599,25 +601,25 @@ function PatternChip({
           : "border-ink-900/10 hover:bg-cream-100/80"
       }`}
     >
-      <div className="relative h-14 overflow-hidden rounded-xl bg-rose-mist/30">
+      <div className="relative h-16 overflow-hidden rounded-xl bg-gradient-to-br from-rose-mist/40 to-cream-100/60">
         {dots.map((d, i) => (
           <span
             key={i}
+            className="absolute block rounded-full bg-rose-dusty"
             style={{
-              position: "absolute",
               left: `${d.x}%`,
               top: `${d.y}%`,
-              fontSize: 8 + d.size * 0.3,
-              opacity: d.opacity,
-              color: "#D4A5A5",
+              // Map source size (14-36) → 2.5-5px so the proportions look
+              // like the actual rendered emoji backdrop but tiny.
+              width: `${Math.max(2.5, d.size * 0.13)}px`,
+              height: `${Math.max(2.5, d.size * 0.13)}px`,
+              opacity: d.opacity * 0.95,
               transform: "translate(-50%, -50%)",
             }}
-          >
-            ●
-          </span>
+          />
         ))}
       </div>
-      <div className="mt-1 text-center text-[11px] font-medium text-ink-700">
+      <div className="mt-1.5 text-center text-[11px] font-medium text-ink-700">
         {label}
       </div>
     </button>
@@ -725,13 +727,16 @@ function LinkReadySheet({
   onCopy: () => void;
   onShare: () => void;
 }) {
+  // Strip protocol so the displayed URL is short enough to fit in narrow
+  // mobile viewports without colliding with the copy button.
+  const displayLink = link.replace(/^https?:\/\//, "");
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.18 }}
-      className="fixed inset-0 z-[9999] grid place-items-end bg-ink-900/30 p-0 backdrop-blur-sm sm:place-items-center sm:p-4"
+      className="fixed inset-0 z-[9999] grid place-items-end bg-ink-900/40 backdrop-blur-sm sm:place-items-center sm:p-4"
       onPointerDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -742,14 +747,14 @@ function LinkReadySheet({
         exit={{ opacity: 0, y: 12, scale: 0.98 }}
         transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
         onClick={(e) => e.stopPropagation()}
-        className="glass-strong relative w-full max-w-sm overflow-hidden rounded-t-3xl px-5 pb-6 pt-5 shadow-soft sm:rounded-3xl"
+        className="glass-strong relative w-full overflow-hidden rounded-t-3xl px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 shadow-soft sm:max-w-sm sm:rounded-3xl sm:px-5 sm:pb-6 sm:pt-5"
       >
         {/* Drag handle */}
-        <div className="absolute inset-x-0 top-2 grid place-items-center sm:hidden">
-          <span className="h-1 w-9 rounded-full bg-ink-900/15" />
+        <div className="mb-3 grid place-items-center sm:hidden">
+          <span className="h-1 w-10 rounded-full bg-ink-900/15" />
         </div>
 
-        <div className="grid place-items-center pt-2">
+        <div className="flex flex-col items-center text-center">
           <motion.div
             initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -758,28 +763,32 @@ function LinkReadySheet({
               ease: [0.34, 1.56, 0.64, 1],
               delay: 0.05,
             }}
-            className="grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-rose-blush to-rose-dusty text-cream-50 shadow-soft"
+            className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-rose-blush to-rose-dusty text-cream-50 shadow-soft sm:h-14 sm:w-14"
           >
-            <CheckIcon className="h-7 w-7" />
+            <CheckIcon className="h-6 w-6 sm:h-7 sm:w-7" />
           </motion.div>
-          <div className="mt-3 text-[10px] uppercase tracking-wider text-ink-400">
+          <div className="mt-2.5 text-[10px] uppercase tracking-wider text-ink-400">
             link siap
           </div>
-          <h2 className="font-display text-2xl italic text-ink-900">
+          <h2 className="font-display text-xl italic leading-tight text-ink-900 sm:text-2xl">
             Sudah tersalin.
           </h2>
-          <p className="mt-1 text-center text-xs text-ink-500">
+          <p className="mt-1 max-w-[280px] text-[11.5px] leading-snug text-ink-500 sm:text-xs">
             Tempel di mana saja — siapapun yang punya link bisa buka.
           </p>
         </div>
 
-        <div className="mt-5 flex items-center gap-2 rounded-2xl bg-cream-50 p-1.5 ring-1 ring-ink-900/10">
-          <input
-            readOnly
-            value={link}
-            onFocus={(e) => e.currentTarget.select()}
-            className="flex-1 truncate rounded-xl bg-transparent px-3 py-2 text-xs text-ink-700 focus:outline-none"
-          />
+        {/* URL row — flex with min-w-0 so the link text can truncate without
+            pushing the copy button off-screen. Display only the host+path. */}
+        <div className="mt-4 flex w-full items-center gap-2 rounded-2xl bg-cream-50 p-1.5 ring-1 ring-ink-900/10">
+          <div
+            className="flex min-w-0 flex-1 items-center rounded-xl px-3 py-2"
+            title={link}
+          >
+            <span className="block truncate text-[12px] text-ink-700">
+              {displayLink}
+            </span>
+          </div>
           <button
             onClick={onCopy}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-ink-900/[0.06] text-ink-700 transition hover:bg-ink-900/[0.12] active:scale-95"
@@ -792,23 +801,23 @@ function LinkReadySheet({
         <div className="mt-3 grid grid-cols-2 gap-2">
           <button
             onClick={onCopy}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-ink-900/[0.05] px-4 py-3 text-sm font-medium text-ink-900 transition hover:bg-ink-900/[0.1] active:scale-[0.98]"
+            className="flex items-center justify-center gap-1.5 rounded-2xl bg-ink-900/[0.05] px-3 py-2.5 text-[13px] font-medium text-ink-900 transition hover:bg-ink-900/[0.1] active:scale-[0.98] sm:py-3 sm:text-sm"
           >
-            <CopyIcon className="h-4 w-4" />
-            <span>Salin lagi</span>
+            <CopyIcon className="h-4 w-4 shrink-0" />
+            <span className="truncate">Salin lagi</span>
           </button>
           <button
             onClick={onShare}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-ink-900 px-4 py-3 text-sm font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 active:scale-[0.98]"
+            className="flex items-center justify-center gap-1.5 rounded-2xl bg-ink-900 px-3 py-2.5 text-[13px] font-medium text-cream-50 shadow-soft transition hover:bg-ink-700 active:scale-[0.98] sm:py-3 sm:text-sm"
           >
-            <ShareIcon className="h-4 w-4" />
-            <span>Bagikan</span>
+            <ShareIcon className="h-4 w-4 shrink-0" />
+            <span className="truncate">Bagikan</span>
           </button>
         </div>
 
         <button
           onClick={onClose}
-          className="mt-3 w-full rounded-2xl px-4 py-2 text-center text-xs text-ink-500 hover:text-ink-900"
+          className="mt-2.5 w-full rounded-2xl px-4 py-2 text-center text-xs text-ink-500 hover:text-ink-900"
         >
           Tutup
         </button>
@@ -872,6 +881,52 @@ function LinkIcon({ className }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 1 0-7.07-7.07L11 6" />
+      <path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 1 0 7.07 7.07L13 18" />
+    </svg>
+  );
+}
+
+function CopyIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="9" y="9" width="11" height="11" rx="2.5" />
+      <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+    </svg>
+  );
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 13l4 4L20 6" />
+    </svg>
+  );
+}
+
       className={className}
       fill="none"
       stroke="currentColor"
