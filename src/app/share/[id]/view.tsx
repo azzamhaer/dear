@@ -6,6 +6,7 @@ import { type ShareTheme, type ShareOptions } from "@/lib/share-themes";
 import { formatWibDisplay } from "@/lib/wib";
 import { formatRelative } from "@/lib/utils";
 import { EmojiBackdrop } from "@/components/emoji-backdrop";
+import { MediaImage } from "@/components/media-image";
 
 interface SharedMemory {
   type: "memory";
@@ -138,10 +139,11 @@ function MemoryView({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="overflow-hidden rounded-3xl shadow-xl"
+      className="overflow-hidden rounded-3xl pb-5 shadow-xl sm:pb-6"
       style={{ background: theme.cardBg, backdropFilter: "blur(20px)" }}
     >
-      <header className="flex items-center gap-3 px-5 py-4 sm:px-6">
+      {/* Author + date strip (compact, like Instagram) */}
+      <header className="flex items-center gap-3 px-5 pt-5 sm:px-6">
         {data.author ? (
           <>
             <AvatarOrInitial
@@ -170,29 +172,40 @@ function MemoryView({
         )}
       </header>
 
+      {/* Caption as the headline — big italic serif sitting ABOVE the photo */}
+      {data.memory.caption ? (
+        <h1 className="px-5 pt-4 font-display text-[26px] italic leading-[1.15] sm:px-6 sm:text-[32px]">
+          {data.memory.caption}
+        </h1>
+      ) : null}
+      {data.memory.location ? (
+        <p className="px-5 pt-2 text-xs opacity-60 sm:px-6">
+          <span style={{ color: theme.accent }}>◆</span> {data.memory.location}
+        </p>
+      ) : null}
+
       {data.media.length > 0 ? (
-        <div className="px-3 sm:px-4">
+        <div className="mt-5 px-3 sm:px-4">
           <div className="hide-scrollbar flex snap-x snap-mandatory overflow-x-auto rounded-2xl">
-            {data.media.map((m) => (
+            {data.media.map((m, i) => (
               <div key={m.id} className="w-full shrink-0 snap-center">
-                <div className="aspect-[4/5] overflow-hidden rounded-2xl">
-                  {m.kind === "video" ? (
+                {m.kind === "video" ? (
+                  <div className="aspect-[4/5] overflow-hidden rounded-2xl">
                     <video
                       src={`/api/share-public/${shareId}/${m.r2Key}`}
                       controls
                       playsInline
                       className="h-full w-full object-cover"
                     />
-                  ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={`/api/share-public/${shareId}/${m.r2Key}`}
-                      alt=""
-                      loading="lazy"
-                      className="h-full w-full object-cover"
-                    />
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <MediaImage
+                    src={`/api/share-public/${shareId}/${m.r2Key}`}
+                    aspect="aspect-[4/5]"
+                    className="rounded-2xl"
+                    eager={i <= 1}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -204,23 +217,8 @@ function MemoryView({
         </div>
       ) : null}
 
-      {data.memory.caption ? (
-        <p
-          className="px-5 pt-4 font-serif text-[17px] leading-relaxed sm:px-6 sm:text-[18px]"
-          style={{ opacity: 0.92 }}
-        >
-          {data.memory.caption}
-        </p>
-      ) : null}
-
-      {data.memory.location ? (
-        <p className="px-5 pt-2 text-xs opacity-60 sm:px-6">
-          📍 {data.memory.location}
-        </p>
-      ) : null}
-
       {data.comments.length > 0 ? (
-        <div className="border-t border-current/10 px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+        <div className="mt-5 border-t border-current/10 px-5 pt-4 sm:px-6">
           <h3 className="mb-3 text-xs uppercase tracking-wider opacity-60">
             Percakapan
           </h3>
@@ -334,21 +332,15 @@ function AlbumView({
 
       {data.memories.length > 0 ? (
         <div className="grid grid-cols-3 gap-1 sm:gap-1.5">
-          {data.memories.map((m) =>
+          {data.memories.map((m, i) =>
             m.coverKey ? (
-              <div
+              <MediaImage
                 key={m.id}
-                className="aspect-square overflow-hidden rounded-xl"
-                title={m.caption || ""}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/api/share-public/${shareId}/${m.coverKey}`}
-                  alt=""
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                />
-              </div>
+                src={`/api/share-public/${shareId}/${m.coverKey}`}
+                aspect="aspect-square"
+                className="rounded-xl"
+                eager={i < 6}
+              />
             ) : (
               <div
                 key={m.id}
