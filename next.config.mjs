@@ -21,6 +21,10 @@ const nextConfig = {
   // editor + local typecheck for safety; build-time type errors are non-fatal.
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  // NOTE: Cache headers are handled by `public/_headers` (native Cloudflare
+  // Pages), not by Next.js `async headers()` — the latter doesn't translate
+  // cleanly through @cloudflare/next-on-pages and can cause static assets
+  // to be routed through the worker (resulting in 500 ERR_ABORTED on chunks).
 };
 
 export default nextConfig;

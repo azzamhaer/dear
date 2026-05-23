@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "description": "Exclude static assets from the worker so /_next/static/* is always served directly from the Pages CDN. Without this, next-on-pages occasionally routes chunks through the worker which can 500.",
+  "include": ["/*"],
+  "exclude": [
+    "/_next/static/*",
+    "/favicon.svg",
+    "/icon.svg",
+    "/apple-icon.png",
+    "/manifest.webmanifest"
+  ]
+}
