@@ -75,21 +75,17 @@ export function ShareView({ theme, shareId, options, children }: Props) {
       <EmojiBackdrop emojis={emojis} pattern={pattern} />
 
       <div className="relative mx-auto max-w-2xl px-4 py-8 sm:py-12">
-        {/* Top brand */}
-        <header className="mb-6 flex items-center justify-between">
+        {/* Top brand — minimal, no "dibagikan" badge */}
+        <header className="mb-6 flex items-center justify-center">
           <Link
             href="/"
-            className="font-display text-xl italic"
-            style={{ color: theme.textClass.includes("cream") ? "#FBF7F1" : "#1F1A17" }}
+            className="font-display text-2xl italic"
+            style={{
+              color: theme.textClass.includes("cream") ? "#FBF7F1" : "#1F1A17",
+            }}
           >
             Dear<span style={{ color: theme.accent }}>.</span>
           </Link>
-          <span
-            className="rounded-full px-2.5 py-1 text-[10px] uppercase tracking-wider opacity-70"
-            style={{ background: theme.cardBg }}
-          >
-            dibagikan
-          </span>
         </header>
 
         {/* Content */}
@@ -102,17 +98,19 @@ export function ShareView({ theme, shareId, options, children }: Props) {
         ) : (
           <LetterView data={children} theme={theme} />
         )}
-
-        {/* Footer */}
-        <footer className="mt-10 text-center text-xs opacity-60">
-          <p>Dibuat di Dear</p>
-          <Link href="/" className="underline opacity-80 hover:opacity-100">
-            buat tempat kalian sendiri
-          </Link>
-        </footer>
       </div>
     </div>
   );
+}
+
+/** Rewrite a privately-served avatar URL to the public avatar proxy
+ *  so anonymous viewers don't get 401'd. */
+function publicAvatar(src: string | null): string | null {
+  if (!src) return src;
+  if (src.startsWith("/api/media/")) {
+    return "/api/avatar/" + src.slice("/api/media/".length);
+  }
+  return src;
 }
 
 /* ============================ memory ============================ */
@@ -147,7 +145,7 @@ function MemoryView({
         {data.author ? (
           <>
             <AvatarOrInitial
-              src={data.author.avatarUrl}
+              src={publicAvatar(data.author.avatarUrl)}
               name={data.author.displayName}
               accent={theme.accent}
             />
@@ -239,7 +237,7 @@ function MemoryView({
               return (
                 <li key={c.id} className="flex items-start gap-2.5">
                   <AvatarOrInitial
-                    src={c.authorAvatar}
+                    src={publicAvatar(c.authorAvatar)}
                     name={c.authorName}
                     accent={theme.accent}
                     size={28}
@@ -345,7 +343,7 @@ function AlbumView({
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/api/media/${m.coverKey}`}
+                  src={`/api/share-public/${shareId}/${m.coverKey}`}
                   alt=""
                   loading="lazy"
                   className="h-full w-full object-cover"

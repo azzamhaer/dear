@@ -5,16 +5,23 @@ const COOKIE = "dear_session";
 // Pages that don't require auth.
 const PUBLIC_PATHS = new Set<string>(["/login"]);
 
-// Prefixes that are public regardless of method (share viewer + IG Story).
-const PUBLIC_PREFIXES = ["/share/", "/api/share-public/", "/api/story/"];
+// Prefixes that are public regardless of method (share viewer + public avatar proxy).
+const PUBLIC_PREFIXES = ["/share/", "/api/share-public/", "/api/avatar/"];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (PUBLIC_PATHS.has(pathname)) return NextResponse.next();
-  if (pathname.startsWith("/api/auth")) return NextResponse.next();
+  // Propagate the path so server components (e.g. root layout) can read it
+  // via `headers()` without restructuring into route groups.
+  const headers = new Headers(req.headers);
+  headers.set("x-dear-pathname", pathname);
+  const passthrough = () =>
+    NextResponse.next({ request: { headers } });
+
+  if (PUBLIC_PATHS.has(pathname)) return passthrough();
+  if (pathname.startsWith("/api/auth")) return passthrough();
   for (const prefix of PUBLIC_PREFIXES) {
-    if (pathname.startsWith(prefix)) return NextResponse.next();
+    if (pathname.startsWith(prefix)) return passthrough();
   }
 
   // Note: we only check for cookie *presence* in middleware (edge constraints).
@@ -34,7 +41,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  return passthrough();
 }
 
 export const config = {

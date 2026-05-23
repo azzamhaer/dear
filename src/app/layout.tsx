@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
+import { headers } from "next/headers";
 import { Nav } from "@/components/nav";
 import { ToastHost } from "@/components/toast-host";
 import { SpecialDayBanner } from "@/components/special-day";
@@ -145,11 +146,19 @@ export default async function RootLayout({
 }) {
   const user = await getCurrentUser().catch(() => null);
 
+  // Public viewer pages (/share/*) must look identical to logged-in users and
+  // anonymous visitors. Detect via the path header set in middleware so we can
+  // suppress the app shell (Nav, max-width wrapper, SpecialDayBanner).
+  const h = await headers();
+  const pathname = h.get("x-dear-pathname") ?? "";
+  const isPublicViewer = pathname.startsWith("/share/");
+  const showAppShell = !!user && !isPublicViewer;
+
   // Collect everyone's special dates so we can detect anniversary/birthday.
   // We only need MM-DD comparisons; safe to read all users (just two of us).
   let allBirthdates: string[] = [];
   let coupleStartDate: string | null = null;
-  if (user) {
+  if (showAppShell) {
     try {
       const rows = await db()
         .select({
@@ -174,7 +183,7 @@ export default async function RootLayout({
       className={`${sans.variable} ${serif.variable} ${display.variable}`}
     >
       <body className="font-sans text-ink-900 antialiased">
-        {user ? (
+        {showAppShell && user ? (
           <Nav
             user={{
               username: user.username,
@@ -185,7 +194,7 @@ export default async function RootLayout({
         ) : null}
         <main
           className={
-            user
+            showAppShell
               ? "mx-auto w-full max-w-3xl px-4 pb-28 pt-4 sm:px-6 md:pb-12"
               : "min-h-dvh"
           }
@@ -193,7 +202,7 @@ export default async function RootLayout({
           {children}
         </main>
         <ToastHost />
-        {user ? (
+        {showAppShell ? (
           <SpecialDayBanner
             birthdates={allBirthdates}
             coupleStartDate={coupleStartDate}
